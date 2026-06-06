@@ -1,0 +1,23 @@
+# Зависимости — восстанавливаются из package-lock.json командой npm install
+node_modules/
+
+# Сборка — пересобирается из исходников (npm run build)
+dist/
+dist-ssr/
+
+# Логи и кеши
+*.log
+npm-debug.log*
+.vite/
+.cache/
+
+# Локальные служебные файлы
+.DS_Store
+.claude/
+.env
+.env.local
+.env.*.local
+
+# Тяжёлые/рабочие материалы, не нужные в репозитории
+Архив.zip
+temp/

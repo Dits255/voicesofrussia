@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: #028090;
+    color: #faf8f4;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .container-px {
+    @apply px-5 sm:px-8 lg:px-12;
+  }
+
+  .wrap {
+    @apply mx-auto w-full max-w-[1280px] container-px;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply btn bg-clay text-white hover:bg-clay-dark hover:-translate-y-0.5;
+  }
+
+  .btn-navy {
+    @apply btn bg-navy text-cream hover:bg-navy-deep hover:-translate-y-0.5;
+  }
+
+  .btn-ghost {
+    @apply btn border border-navy/20 text-navy hover:border-navy/40 hover:bg-navy/5;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.22em] text-teal;
+  }
+
+  /* Скрыть скроллбар у горизонтальных лент, оставив скролл */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Типографика тела статьи */
+  .article-body {
+    @apply text-[1.075rem] leading-[1.85] text-ink/90;
+  }
+  .article-body p {
+    @apply my-5;
+  }
+  .article-body h2 {
+    @apply mt-12 mb-4 text-2xl font-bold text-navy;
+  }
+  .article-body h3 {
+    @apply mt-9 mb-3 text-xl font-bold text-navy;
+  }
+  .article-body img {
+    @apply my-8 w-full rounded-xl shadow-card;
+  }
+  .article-body ul {
+    @apply my-5 list-disc space-y-2 pl-6;
+  }
+  .article-body ol {
+    @apply my-5 list-decimal space-y-2 pl-6;
+  }
+  .article-body a {
+    @apply text-teal underline underline-offset-2;
+  }
+  .article-body strong {
+    @apply font-semibold text-navy;
+  }
+  .article-body blockquote {
+    @apply my-7 border-l-4 border-clay pl-5 text-xl font-medium italic text-navy;
+  }
+}
