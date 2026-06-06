@@ -90,12 +90,12 @@ export default function About() {
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
               <div className="eyebrow text-cream/70">Стать автором</div>
-              <h2 className="mt-2 font-display text-3xl font-bold sm:text-4xl">Расскажи свою историю</h2>
+              <h2 className="mt-2 font-display text-3xl font-bold sm:text-4xl">Расскажите свою историю</h2>
               <ul className="mt-6 space-y-3 text-cream/90">
                 {[
-                  'Говори от первого лица — мы ценим личный опыт выше энциклопедии.',
+                  'Говорите от первого лица — мы ценим личный опыт выше энциклопедии.',
                   'Конкретные детали важнее общих слов: имя бабушки, вкус блюда, слово на родном языке.',
-                  'Никаких костюмов напрокат и клюквы — только то, чем живёшь на самом деле.',
+                  'Никаких костюмов напрокат и клюквы — только то, чем живёте на самом деле.',
                   'Любой формат: текст, видео, аудио или короткий ролик.',
                 ].map((t) => (
                   <li key={t} className="flex gap-3">
@@ -112,9 +112,9 @@ export default function About() {
             >
               <h3 className="font-display text-lg font-bold text-navy">Заявка автора</h3>
               <input required placeholder="Имя" className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
-              <input required placeholder="Народ, который ты представляешь" className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
+              <input required placeholder="Народ, который вы представляете" className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
               <input required type="email" placeholder="E-mail" className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
-              <textarea placeholder="О чём хочешь рассказать?" rows={3} className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
+              <textarea placeholder="О чём хотите рассказать?" rows={3} className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
               <button type="submit" className="btn-primary w-full">Отправить заявку</button>
             </form>
           </div>

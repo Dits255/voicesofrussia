@@ -119,13 +119,13 @@ function CTA() {
   return (
     <section className="wrap py-16">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal to-teal-dark px-7 py-12 text-cream sm:px-12 sm:py-16">
-        <div className="relative max-w-2xl">
-          <div className="eyebrow text-cream/70">Ты автор?</div>
+        <div className="relative z-10 max-w-2xl">
+          <div className="eyebrow text-cream/70">Вы автор?</div>
           <h2 className="mt-3 font-display text-3xl font-bold leading-tight sm:text-4xl">
-            Расскажи свою историю
+            Расскажите свою историю
           </h2>
           <p className="mt-4 text-lg text-cream/85">
-            Если ты — представитель своего народа и хочешь показать его настоящим: без костюмов
+            Если вы — представитель своего народа и хотите показать его настоящим: без костюмов
             напрокат и без клюквы. Мы помогаем с форматом, съёмкой и текстом.
           </p>
           <Link to="/about#apply" className="btn mt-7 bg-cream text-navy hover:-translate-y-0.5">
