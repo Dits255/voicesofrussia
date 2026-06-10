@@ -27,15 +27,15 @@ function HeroBlock() {
           <div className="absolute left-5 top-5">
             <FormatBadge format={lead.format} />
           </div>
-          <div className="absolute inset-x-0 bottom-0 p-7 text-cream">
+          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-7 text-cream">
             <span className="eyebrow text-clay">Публикация дня</span>
-            <h2 className="mt-2 font-display text-3xl font-bold leading-tight sm:text-4xl">
+            <h2 className="mt-1.5 font-display text-2xl font-bold leading-tight sm:text-3xl lg:text-4xl">
               {lead.title}
             </h2>
             {lead.subtitle && (
-              <p className="mt-2 text-lg text-cream/75">{lead.subtitle}</p>
+              <p className="mt-1.5 hidden text-base text-cream/75 sm:block sm:text-lg">{lead.subtitle}</p>
             )}
-            <div className="mt-4 text-sm text-cream/70">
+            <div className="mt-2 text-xs text-cream/70 sm:mt-4 sm:text-sm">
               {cultureName(lead.cultureSlug)}
               {bylineFor(lead) ? ` · ${bylineFor(lead)}` : ''}
             </div>
@@ -61,7 +61,7 @@ function ContentGrid() {
   return (
     <section className="wrap py-8">
       <h2 className="mb-5 font-display text-xl font-bold text-navy">Свежие истории</h2>
-      <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
         {items.map((item) => (
           <ContentCard key={item.slug} item={item} />
         ))}
