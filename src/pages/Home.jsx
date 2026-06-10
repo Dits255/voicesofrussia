@@ -27,11 +27,6 @@ function Hero() {
               <Link to="/feed" className="btn-navy">Смотреть ленту</Link>
               <Link to="/about#apply" className="btn-ghost">Рассказать свою историю</Link>
             </div>
-            <div className="mt-8 flex items-center gap-6 text-sm text-ink/55">
-              <span><b className="text-navy">{cultures.length}</b> народов</span>
-              <span><b className="text-navy">{content.filter((c) => c.hasBody).length}</b> историй</span>
-              <span><b className="text-navy">5</b> форматов</span>
-            </div>
           </motion.div>
         </div>
 

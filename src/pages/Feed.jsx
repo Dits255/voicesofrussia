@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Check } from 'lucide-react'
-import { content, cultures, FORMATS, TOPICS, trending, sortByDate } from '../lib/data'
+import { content, cultures, FORMATS, TOPICS, trending, sortByDate, cultureName, bylineFor } from '../lib/data'
 import { ContentCard, TrendingRow } from '../components/cards'
+
+const norm = (s) => (s || '').toString().toLowerCase().replace(/ё/g, 'е')
 
 function Option({ children, active, onClick }) {
   return (
@@ -70,6 +72,7 @@ export default function Feed() {
   const [format, setFormat] = useState(params.get('format'))
   const [culture, setCulture] = useState(params.get('culture'))
   const [topic, setTopic] = useState(params.get('topic'))
+  const q = params.get('q') || ''
 
   const update = (key, setter) => (val) => {
     setter(val)
@@ -81,11 +84,17 @@ export default function Feed() {
 
   const items = useMemo(() => {
     let list = sortByDate(content)
+    if (q) {
+      const nq = norm(q.trim())
+      list = list.filter((c) =>
+        norm([c.title, c.subtitle, c.excerpt, bylineFor(c), c.format, cultureName(c.cultureSlug), (c.topics || []).join(' ')].join(' ')).includes(nq)
+      )
+    }
     if (format) list = list.filter((c) => c.format === format)
     if (culture) list = list.filter((c) => c.cultureSlug === culture)
     if (topic) list = list.filter((c) => (c.topics || []).includes(topic))
     return list
-  }, [format, culture, topic])
+  }, [q, format, culture, topic])
 
   const reset = () => {
     setFormat(null); setCulture(null); setTopic(null)
@@ -97,7 +106,13 @@ export default function Feed() {
     <div className="wrap py-10">
       <header className="mb-6">
         <div className="eyebrow mb-2">Лента</div>
-        <h1 className="font-display text-4xl font-extrabold text-navy sm:text-5xl">Все истории</h1>
+        {q ? (
+          <h1 className="font-display text-4xl font-extrabold text-navy sm:text-5xl">
+            «{q}»
+          </h1>
+        ) : (
+          <h1 className="font-display text-4xl font-extrabold text-navy sm:text-5xl">Все истории</h1>
+        )}
       </header>
 
       {/* Компактная панель фильтров */}

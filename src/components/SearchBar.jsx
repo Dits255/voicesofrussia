@@ -51,12 +51,16 @@ export default function SearchBar({ autoFocus = false }) {
 
   const go = (to) => { setFocused(false); setQ(''); inputRef.current?.blur(); navigate(to) }
 
+  const goToFeed = () => {
+    const trimmed = q.trim()
+    setFocused(false)
+    inputRef.current?.blur()
+    navigate(trimmed ? `/feed?q=${encodeURIComponent(trimmed)}` : '/feed')
+  }
+
   const onKeyDown = (e) => {
     if (e.key === 'Escape') { setFocused(false); inputRef.current?.blur() }
-    if (e.key === 'Enter' && results[0]) {
-      const r = results[0]
-      go(r.kind === 'culture' ? `/culture/${r.item.slug}` : `/story/${r.item.slug}`)
-    }
+    if (e.key === 'Enter') goToFeed()
   }
 
   return (
@@ -66,7 +70,9 @@ export default function SearchBar({ autoFocus = false }) {
           focused ? 'border-teal shadow-card' : 'border-navy/15 hover:border-navy/30'
         }`}
       >
-        <Search size={17} className="shrink-0 text-ink/40" />
+        <button onClick={goToFeed} aria-label="Перейти к результатам поиска" className="shrink-0 text-ink/40 hover:text-teal transition-colors">
+          <Search size={17} />
+        </button>
         <input
           ref={inputRef}
           value={q}

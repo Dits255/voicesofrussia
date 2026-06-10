@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
 import Home from './pages/Home'
+import Home2 from './pages/Home2'
 import Feed from './pages/Feed'
 import Cultures from './pages/Cultures'
 import Culture from './pages/Culture'
@@ -17,11 +18,11 @@ function ScrollToTop() {
   const { pathname, hash } = useLocation()
   useEffect(() => {
     if (hash) {
-      const el = document.getElementById(hash.slice(1))
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' })
-        return
-      }
+      const id = hash.slice(1)
+      const t = setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+      }, 380)
+      return () => clearTimeout(t)
     }
     window.scrollTo({ top: 0 })
   }, [pathname, hash])
@@ -50,7 +51,8 @@ export default function App() {
       <div className="flex-1">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<Page><Home /></Page>} />
+            <Route path="/" element={<Page><Home2 /></Page>} />
+            <Route path="/home2" element={<Page><Home /></Page>} />
             <Route path="/feed" element={<Page><Feed /></Page>} />
             <Route path="/cultures" element={<Page><Cultures /></Page>} />
             <Route path="/culture/:slug" element={<Page><Culture /></Page>} />
