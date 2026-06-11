@@ -6,7 +6,7 @@ import { FORMATS, TOPICS, cultures, cultureName } from '../lib/data'
 import { FormatBadge } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
 
-const LS = { profile: 'golosa-profile', content: 'golosa-mycontent' }
+const LS = { profile: 'golosa-profile-v2', content: 'golosa-mycontent' }
 
 function useLocal(key, initial) {
   const [v, setV] = useState(() => {
