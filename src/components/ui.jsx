@@ -1,5 +1,77 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { animate, motion, useMotionValue, useTransform } from 'framer-motion'
 import { formatIcon, formatLabel, authorsOf, getCulture, initials } from '../lib/data'
+
+// Число «накручивается» от нуля при появлении
+export function CountUp({ value, format = String }) {
+  const mv = useMotionValue(0)
+  const text = useTransform(mv, (v) => format(Math.round(v)))
+  useEffect(() => {
+    const ctrl = animate(mv, value, { duration: 1.1, ease: [0.22, 1, 0.36, 1] })
+    return () => ctrl.stop()
+  }, [mv, value])
+  return <motion.span>{text}</motion.span>
+}
+
+// Каскадное появление при скролле: элемент всплывает снизу с задержкой по индексу
+export function Reveal({ index = 0, className = '', children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-30px' }}
+      transition={{ duration: 0.45, delay: Math.min(index * 0.05, 0.3), ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// Обложка: скелетон-шиммер пока грузится, фирменный градиент-фолбэк при ошибке
+export function CoverImage({ src, alt = '', accent = '#1A3A5C', label = '', imgClassName = '', className = '', eager = false }) {
+  const [state, setState] = useState(src ? 'loading' : 'error')
+  return (
+    <div className={`relative h-full w-full ${className}`}>
+      {state !== 'error' && (
+        <img
+          src={src}
+          alt={alt}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          ref={(el) => { if (el && el.complete && el.naturalWidth > 0 && state === 'loading') setState('done') }}
+          onLoad={() => setState('done')}
+          onError={() => setState('error')}
+          className={`h-full w-full object-cover transition-opacity duration-500 ${
+            state === 'done' ? 'opacity-100' : 'opacity-0'
+          } ${imgClassName}`}
+        />
+      )}
+      {state === 'loading' && <div className="skeleton absolute inset-0" aria-hidden />}
+      {state === 'error' && (
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{ background: `linear-gradient(140deg, ${accent} 0%, #14273E 100%)` }}
+          aria-hidden
+        >
+          {/* орнамент из кругов — отсылка к логотипу */}
+          <svg viewBox="0 0 100 100" className="absolute -right-4 -top-4 h-2/3 w-2/3 opacity-15" aria-hidden>
+            <circle cx="50" cy="50" r="28" fill="#FAF8F4" />
+            <circle cx="14" cy="22" r="12" fill="#FAF8F4" opacity="0.7" />
+            <circle cx="86" cy="78" r="9" fill="#FAF8F4" opacity="0.5" />
+            <circle cx="22" cy="84" r="7" fill="#FAF8F4" opacity="0.4" />
+          </svg>
+          {label && (
+            <span className="absolute bottom-2 left-4 select-none font-display text-6xl font-extrabold text-cream/25">
+              {label[0]}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 // Аватар автора — инициалы на цвете народа (фото ещё не загружено)
 export function AuthorAvatar({ author, size = 32, className = '' }) {

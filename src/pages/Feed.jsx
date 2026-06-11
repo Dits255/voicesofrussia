@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Check } from 'lucide-react'
 import { content, cultures, FORMATS, TOPICS, trending, sortByDate, cultureName, bylineFor } from '../lib/data'
+import { useClickOutside } from '../lib/hooks'
 import { ContentCard, TrendingRow } from '../components/cards'
+import { Reveal } from '../components/ui'
 
 const norm = (s) => (s || '').toString().toLowerCase().replace(/ё/g, 'е')
 
@@ -25,11 +27,7 @@ function FilterDropdown({ label, options, value, onChange }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  useEffect(() => {
-    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    window.addEventListener('mousedown', onDown)
-    return () => window.removeEventListener('mousedown', onDown)
-  }, [])
+  useClickOutside(ref, () => setOpen(false))
 
   const current = options.find((o) => o.id === value)
   const active = value != null
@@ -136,7 +134,11 @@ export default function Feed() {
         <div>
           {items.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              {items.map((i) => <ContentCard key={i.slug} item={i} />)}
+              {items.map((i, idx) => (
+                <Reveal key={i.slug} index={idx % 2} className="h-full">
+                  <ContentCard item={i} />
+                </Reveal>
+              ))}
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-navy/20 p-12 text-center text-ink/50">

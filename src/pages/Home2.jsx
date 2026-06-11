@@ -76,7 +76,8 @@ function PeoplesStrip() {
       <div className="wrap mb-5">
         <h2 className="font-display text-xl font-bold text-navy">Народы</h2>
       </div>
-      <div className="no-scrollbar flex gap-4 overflow-x-auto px-5 pb-3 sm:px-8 lg:px-12">
+      {/* py-8/-my-8 — запас, чтобы overflow-контейнер не обрезал тени карточек */}
+      <div className="no-scrollbar -mt-8 -mb-5 flex gap-4 overflow-x-auto px-5 py-8 sm:px-8 lg:px-12">
         {cultures.map((c) => (
           <CultureCard key={c.slug} culture={c} />
         ))}

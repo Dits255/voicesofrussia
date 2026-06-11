@@ -2,42 +2,12 @@ import { useEffect, useState } from 'react'
 import {
   X, ImagePlus, Eye, ThumbsUp, UserPlus, FileText, Pencil, Trash2, Plus, Settings,
 } from 'lucide-react'
-import { FORMATS, TOPICS, cultures, cultureName } from '../lib/data'
-import { FormatBadge } from '../components/ui'
+import { FORMATS, TOPICS, cultures, cultureName, initials } from '../lib/data'
+import { LS, DEFAULT_PROFILE, DEFAULT_CONTENT, fmtNum } from '../lib/studio'
+import { useLocal } from '../lib/hooks'
+import { FormatBadge, CountUp } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
 
-const LS = { profile: 'golosa-profile-v2', content: 'golosa-mycontent' }
-
-function useLocal(key, initial) {
-  const [v, setV] = useState(() => {
-    try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : initial } catch { return initial }
-  })
-  useEffect(() => { try { localStorage.setItem(key, JSON.stringify(v)) } catch { /* ignore */ } }, [key, v])
-  return [v, setV]
-}
-
-const DEFAULT_PROFILE = {
-  name: 'Автор платформы',
-  handle: 'author.platform',
-  cultureSlug: null,
-  region: 'Россия',
-  bio: 'Демонстрационный аккаунт платформы «Голоса России». Здесь будут ваши публикации, статистика и настройки профиля.',
-  avatar: '',
-  followers: 1240,
-}
-
-const DEFAULT_CONTENT = [
-  { id: 'm1', title: 'Как я храню якутский дома', subtitle: 'Язык в обычной городской семье', format: 'Лонгрид', cultureSlug: 'yakuty', topics: ['Язык', 'Идентичность'], status: 'published', views: 12300, likes: 840, cover: '' },
-  { id: 'm2', title: 'Ысыах в большом городе', subtitle: 'Праздник солнца вдали от дома', format: 'Короткое', cultureSlug: 'yakuty', topics: ['Традиции'], status: 'moderation', views: 0, likes: 0, cover: '' },
-  { id: 'm3', title: 'Строганина: рецепт от бабушки', subtitle: 'Как готовят на родине', format: 'Подборка', cultureSlug: 'yakuty', topics: ['Еда'], status: 'published', views: 5100, likes: 320, cover: '' },
-]
-
-const fmtNum = (n) => {
-  if (!n) return '0'
-  if (n >= 1000) { const v = n / 1000; return `${v.toFixed(v < 10 ? 1 : 0).replace('.', ',')} тыс.` }
-  return String(n)
-}
-const initials = (name) => name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
 const readDataUrl = (file) => new Promise((res) => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(file) })
 const accentOf = (slug) => cultures.find((c) => c.slug === slug)?.accent || '#1A3A5C'
 
@@ -134,9 +104,9 @@ function StatTiles({ content, profile }) {
   const views = content.reduce((s, c) => s + (c.views || 0), 0)
   const likes = content.reduce((s, c) => s + (c.likes || 0), 0)
   const tiles = [
-    { icon: Eye, label: 'Просмотры', value: fmtNum(views) },
-    { icon: ThumbsUp, label: 'Лайки', value: fmtNum(likes) },
-    { icon: UserPlus, label: 'Подписчики', value: fmtNum(profile.followers) },
+    { icon: Eye, label: 'Просмотры', value: views, format: fmtNum },
+    { icon: ThumbsUp, label: 'Лайки', value: likes, format: fmtNum },
+    { icon: UserPlus, label: 'Подписчики', value: profile.followers, format: fmtNum },
     { icon: FileText, label: 'Материалы', value: content.length },
   ]
   return (
@@ -144,7 +114,9 @@ function StatTiles({ content, profile }) {
       {tiles.map((t) => (
         <div key={t.label} className="rounded-2xl bg-white p-4 shadow-card">
           <t.icon size={18} className="text-teal" />
-          <div className="mt-2 font-display text-2xl font-extrabold text-navy">{t.value}</div>
+          <div className="mt-2 font-display text-2xl font-extrabold text-navy">
+            <CountUp value={t.value} format={t.format} />
+          </div>
           <div className="text-xs uppercase tracking-wide text-ink/45">{t.label}</div>
         </div>
       ))}

@@ -77,13 +77,17 @@ export const relatedContent = (item, n = 3) => {
 }
 
 // --- Тело статьи (сырой HTML, собранный из docx) ---
+// Ленивый glob: HTML статей не попадает в основной бандл,
+// каждая статья грузится отдельным чанком при открытии
 const bodies = import.meta.glob('../content/*/index.html', {
   query: '?raw',
   import: 'default',
-  eager: true,
 })
 
-export const getArticleHtml = (slug) => bodies[`../content/${slug}/index.html`] || ''
+export const loadArticleHtml = (slug) => {
+  const load = bodies[`../content/${slug}/index.html`]
+  return load ? load() : Promise.resolve('')
+}
 
 export const formatDate = (iso) => {
   if (!iso) return ''

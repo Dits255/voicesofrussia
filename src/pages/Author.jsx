@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { UserPlus, Check } from 'lucide-react'
+import { useParams, Link } from 'react-router-dom'
+import { UserPlus, Check, MapPin, GraduationCap } from 'lucide-react'
 import { getAuthor, getCulture, contentByAuthor } from '../lib/data'
+import { useSubscriptions } from '../lib/hooks'
 import { useAuth } from '../context/AuthContext'
-import { AuthorAvatar } from '../components/ui'
+import { AuthorAvatar, Reveal } from '../components/ui'
 import { ContentCard } from '../components/cards'
 import NotFound from './NotFound'
 
@@ -17,26 +17,17 @@ const fmtViews = (n) =>
 
 function SubscribeButton({ slug }) {
   const { user, openLogin } = useAuth()
-  const [on, setOn] = useState(false)
-
-  useEffect(() => {
-    if (!user) return
-    try { setOn(localStorage.getItem(`golosa-sub:${slug}`) === '1') } catch { /* ignore */ }
-  }, [slug, user])
+  const { has, toggle } = useSubscriptions()
 
   if (user?.slug === slug) return null
 
-  const toggle = () => {
-    if (!user) { openLogin(); return }
-    const v = !on
-    setOn(v)
-    try { localStorage.setItem(`golosa-sub:${slug}`, v ? '1' : '0') } catch { /* ignore */ }
-  }
+  const on = !!user && has(slug)
+  const onClick = () => { if (!user) { openLogin(); return } toggle(slug) }
 
   return on ? (
-    <button onClick={toggle} className="btn-ghost shrink-0"><Check size={17} /> Вы подписаны</button>
+    <button onClick={onClick} className="btn-ghost shrink-0"><Check size={17} /> Вы подписаны</button>
   ) : (
-    <button onClick={toggle} className="btn-primary shrink-0"><UserPlus size={17} /> Подписаться</button>
+    <button onClick={onClick} className="btn-primary shrink-0"><UserPlus size={17} /> Подписаться</button>
   )
 }
 
@@ -61,10 +52,19 @@ export default function Author() {
 
   return (
     <div className="pb-6">
-      {/* Цветная подложка */}
-      <div className="h-36 w-full sm:h-44" style={{ background: `linear-gradient(135deg, ${accent}, #102640)` }} />
+      {/* Цветная подложка с орнаментом из кругов-логотипа */}
+      <div className="relative h-36 w-full overflow-hidden sm:h-44" style={{ background: `linear-gradient(135deg, ${accent}, #102640)` }}>
+        <svg viewBox="0 0 100 100" className="absolute -top-6 right-[8%] h-[150%] w-auto opacity-10" aria-hidden>
+          <circle cx="50" cy="50" r="28" fill="#FAF8F4" />
+          <circle cx="14" cy="22" r="12" fill="#FAF8F4" opacity="0.7" />
+          <circle cx="86" cy="78" r="9" fill="#FAF8F4" opacity="0.5" />
+          <circle cx="22" cy="84" r="7" fill="#FAF8F4" opacity="0.4" />
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#FAF8F4" strokeWidth="1" opacity="0.5" />
+        </svg>
+      </div>
 
-      <div className="wrap">
+      {/* relative — иначе позиционированный баннер перекрывает аватар, заходящий на него */}
+      <div className="wrap relative">
         {/* Аватар (заходит на подложку) + кнопка подписки */}
         <div className="-mt-12 flex items-end justify-between gap-4">
           <AuthorAvatar author={author} size={112} className="ring-4 ring-cream" />
@@ -73,6 +73,29 @@ export default function Author() {
 
         {/* Имя — строго ниже подложки */}
         <h1 className="mt-5 font-display text-3xl font-extrabold text-navy sm:text-4xl">{author.name}</h1>
+
+        {/* Роль, народ, регион */}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {author.role && (
+            <span className="chip bg-navy/[0.08] normal-case tracking-normal text-navy">
+              <GraduationCap size={14} /> {author.role}
+            </span>
+          )}
+          {culture && (
+            <Link
+              to={`/culture/${culture.slug}`}
+              className="chip normal-case tracking-normal text-cream transition-opacity hover:opacity-85"
+              style={{ backgroundColor: accent }}
+            >
+              {culture.name}
+            </Link>
+          )}
+          {author.region && (
+            <span className="chip bg-navy/[0.08] normal-case tracking-normal text-ink/65">
+              <MapPin size={14} /> {author.region}
+            </span>
+          )}
+        </div>
 
         <p className="mt-3 max-w-2xl leading-relaxed text-ink/75">{author.bio}</p>
 
@@ -90,7 +113,11 @@ export default function Author() {
           </h2>
           {items.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((i) => <ContentCard key={i.slug} item={i} />)}
+              {items.map((item, i) => (
+                <Reveal key={item.slug} index={i % 3} className="h-full">
+                  <ContentCard item={item} />
+                </Reveal>
+              ))}
             </div>
           ) : (
             <p className="rounded-2xl border border-dashed border-navy/20 p-10 text-center text-ink/50">

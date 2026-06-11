@@ -95,7 +95,7 @@ export default function StudioAudience() {
                   <th className="px-5 py-3 font-semibold">Канал</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-navy/8">
+              <tbody className="divide-y divide-navy/[0.08]">
                 {[
                   ['Короткое видео', 'Молодёжь 16–24', 'Shorts · Reels · VK Клипы'],
                   ['Видео', 'Любознательные 25–45', 'YouTube · сайт'],

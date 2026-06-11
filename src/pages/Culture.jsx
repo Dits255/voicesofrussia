@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { MapPin } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { MapPin, Languages, Users } from 'lucide-react'
 import { getCulture, contentByCulture, relatedCultures, authorsByCulture } from '../lib/data'
 import { ContentCard, CultureCard } from '../components/cards'
-import { AuthorAvatar } from '../components/ui'
+import { AuthorAvatar, Reveal } from '../components/ui'
 import NotFound from './NotFound'
 
 const TABS = [
@@ -14,11 +15,13 @@ const TABS = [
   { id: 'video', label: 'Видео' },
 ]
 
-function Stat({ label, value }) {
+function Stat({ icon: Icon, label, value }) {
   return (
-    <div>
-      <div className="text-xs uppercase tracking-widest text-cream/50">{label}</div>
-      <div className="mt-1 font-semibold text-cream">{value}</div>
+    <div className="rounded-xl bg-cream/10 p-3 backdrop-blur-sm">
+      <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-cream/55">
+        <Icon size={13} aria-hidden /> {label}
+      </div>
+      <div className="mt-1.5 font-semibold text-cream">{value}</div>
     </div>
   )
 }
@@ -38,23 +41,29 @@ export default function Culture() {
 
   return (
     <div className="pb-6">
-      {/* Шапка — тёмный фон, чтобы описание и статистика читались под фото */}
+      {/* Шапка — тёмный фон с подмешанным акцентом народа */}
       <header className="bg-navy text-cream">
         <div className="relative h-[42vh] min-h-[300px] w-full overflow-hidden sm:h-[50vh]">
           <img src={culture.cover} alt={culture.name} className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/55 to-navy/15" />
+          <div
+            className="absolute inset-0 mix-blend-soft-light"
+            style={{ background: `linear-gradient(160deg, ${culture.accent}AA, transparent 60%)` }}
+            aria-hidden
+          />
         </div>
         <div className="wrap relative -mt-40 pb-14 sm:-mt-44">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-cream/15 px-3 py-1.5 text-sm backdrop-blur">
             <MapPin size={15} aria-hidden /> {culture.region}
           </div>
+          <div className="mb-3 h-1.5 w-14 rounded-full" style={{ backgroundColor: culture.accent }} aria-hidden />
           <h1 className="font-display text-[1.6rem] font-extrabold leading-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl">{culture.name}</h1>
           <p className="mt-1 text-lg text-cream/70">самоназвание — {culture.selfName}</p>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-cream/85">{culture.description}</p>
-          <div className="mt-7 grid max-w-lg grid-cols-2 gap-5 sm:grid-cols-3">
-            <Stat label="Язык" value={culture.language} />
-            <Stat label="Население" value={culture.population} />
-            <Stat label="Регион" value={culture.region} />
+          <div className="mt-7 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-3">
+            <Stat icon={Languages} label="Язык" value={culture.language} />
+            <Stat icon={Users} label="Население" value={culture.population} />
+            <Stat icon={MapPin} label="Регион" value={culture.region} />
           </div>
         </div>
       </header>
@@ -71,11 +80,21 @@ export default function Culture() {
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`shrink-0 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                  tab === t.id ? 'border-teal text-teal' : 'border-transparent text-ink/55 hover:text-navy'
+                className={`relative shrink-0 px-4 py-3 text-sm font-semibold transition-colors ${
+                  tab === t.id ? '' : 'text-ink/55 hover:text-navy'
                 }`}
+                style={tab === t.id ? { color: culture.accent } : undefined}
               >
                 {t.label} <span className="text-ink/35">{count}</span>
+                {tab === t.id && (
+                  <motion.span
+                    layoutId="culture-tab"
+                    transition={{ type: 'spring', stiffness: 420, damping: 35 }}
+                    className="absolute inset-x-2 bottom-0 h-[2.5px] rounded-full"
+                    style={{ backgroundColor: culture.accent }}
+                    aria-hidden
+                  />
+                )}
               </button>
             )
           })}
@@ -83,7 +102,11 @@ export default function Culture() {
 
         {items.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((i) => <ContentCard key={i.slug} item={i} />)}
+            {items.map((item, i) => (
+              <Reveal key={item.slug} index={i % 3} className="h-full">
+                <ContentCard item={item} />
+              </Reveal>
+            ))}
           </div>
         ) : (
           <p className="rounded-2xl border border-dashed border-navy/20 p-10 text-center text-ink/50">

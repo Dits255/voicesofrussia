@@ -1,19 +1,36 @@
 import { Link, Navigate } from 'react-router-dom'
 import { authors, contentByAuthor, sortByDate } from '../lib/data'
+import { useSubscriptions } from '../lib/hooks'
 import { useAuth } from '../context/AuthContext'
 import { AuthorAvatar } from '../components/ui'
 import { ContentCard } from '../components/cards'
 
-const SUBSCRIBED_SLUGS = authors.slice(0, 5).map((a) => a.slug)
-
 export default function Subscriptions() {
   const { user } = useAuth()
+  const { list: subs } = useSubscriptions()
   if (!user) return <Navigate to="/" replace />
 
-  const subscribedAuthors = authors.filter((a) => SUBSCRIBED_SLUGS.includes(a.slug))
+  const subscribedAuthors = authors.filter((a) => subs.includes(a.slug))
   const feed = sortByDate(
-    SUBSCRIBED_SLUGS.flatMap((slug) => contentByAuthor(slug)),
+    subs.flatMap((slug) => contentByAuthor(slug)),
   ).slice(0, 12)
+
+  if (subscribedAuthors.length === 0) {
+    return (
+      <div className="wrap py-10">
+        <header className="mb-8">
+          <div className="eyebrow mb-2">Ваша лента</div>
+          <h1 className="font-display text-4xl font-extrabold text-navy sm:text-5xl">Подписки</h1>
+        </header>
+        <div className="rounded-2xl border border-dashed border-navy/20 p-12 text-center text-ink/50">
+          Вы пока ни на кого не подписаны — найдите интересных авторов в ленте.
+          <div className="mt-3">
+            <Link to="/feed" className="font-semibold text-teal hover:underline">Перейти в ленту →</Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="wrap py-10">
@@ -26,7 +43,8 @@ export default function Subscriptions() {
         <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-ink/40">
           Авторы, на которых вы подписаны
         </p>
-        <div className="no-scrollbar flex gap-6 overflow-x-auto pb-2">
+        {/* p-1 — чтобы ring при наведении не обрезался overflow-контейнером */}
+        <div className="no-scrollbar flex gap-6 overflow-x-auto p-1 pb-2">
           {subscribedAuthors.map((author) => (
             <Link
               key={author.slug}

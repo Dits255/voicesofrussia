@@ -6,6 +6,7 @@ import {
   UserCircle2, Plus,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useClickOutside } from '../lib/hooks'
 import SearchBar from './SearchBar'
 import LoginModal from './LoginModal'
 import ProfileModal from './ProfileModal'
@@ -17,7 +18,8 @@ const links = [
 ]
 
 const STUDIO_LINKS = [
-  { to: '/studio', label: 'Студия', exact: true },
+  { to: '/studio', label: 'Студия' },
+  { to: '/studio/analytics', label: 'Аналитика' },
   { to: '/studio/guidelines', label: 'Гайдлайны' },
   { to: '/studio/audience', label: 'Аудитория' },
 ]
@@ -37,12 +39,13 @@ function Logo() {
         className="shrink-0 transition-opacity group-hover:opacity-75"
         aria-hidden
       >
+        {/* Круги вокруг центра — в акцентных цветах народов платформы */}
         <circle cx="42" cy="40" r="22" fill="none" stroke="#E07A5F" strokeWidth="1" opacity="0.2"/>
-        <circle cx="16" cy="24" r="10" fill="#1A3A5C"/>
-        <circle cx="64" cy="18" r="7"  fill="#1A3A5C" opacity="0.75"/>
-        <circle cx="20" cy="58" r="9"  fill="#1A3A5C" opacity="0.6"/>
-        <circle cx="63" cy="58" r="5"  fill="#1A3A5C" opacity="0.45"/>
-        <circle cx="70" cy="38" r="4"  fill="#1A3A5C" opacity="0.3"/>
+        <circle cx="16" cy="24" r="10" fill="#4A8FB0"/>
+        <circle cx="64" cy="18" r="7"  fill="#2A9D8F"/>
+        <circle cx="20" cy="58" r="9"  fill="#E0A458"/>
+        <circle cx="63" cy="58" r="5"  fill="#3E7B59"/>
+        <circle cx="70" cy="38" r="4"  fill="#B5524A"/>
         <circle cx="42" cy="40" r="15" fill="#E07A5F"/>
       </svg>
       <span className="hidden font-display text-lg font-bold leading-none text-navy sm:inline">
@@ -52,22 +55,31 @@ function Logo() {
   )
 }
 
-function NavLinks({ onClick }) {
+// Ползунок-подчёркивание, плавно перетекающий между активными пунктами
+function Underline({ layoutId }) {
+  return (
+    <motion.span
+      layoutId={layoutId}
+      transition={{ type: 'spring', stiffness: 420, damping: 35 }}
+      className="absolute inset-x-2.5 bottom-0 h-[2.5px] rounded-full bg-teal"
+      aria-hidden
+    />
+  )
+}
+
+function NavLinks({ onClick, underlineId = 'nav-underline' }) {
   const { user } = useAuth()
   const location = useLocation()
   const all = user ? [...links, { to: '/subscriptions', label: 'Подписки' }] : links
-  return all.map((l) => (
-    <NavLink
-      key={l.to}
-      to={l.to}
-      onClick={onClick}
-      className={({ isActive }) =>
-        linkCls(isActive || (l.match && location.pathname.startsWith(l.match)))
-      }
-    >
-      {l.label}
-    </NavLink>
-  ))
+  return all.map((l) => {
+    const active = location.pathname === l.to || (l.match && location.pathname.startsWith(l.match))
+    return (
+      <NavLink key={l.to} to={l.to} onClick={onClick} className={`relative ${linkCls(active)}`}>
+        {l.label}
+        {active && <Underline layoutId={underlineId} />}
+      </NavLink>
+    )
+  })
 }
 
 function DropItem({ icon: Icon, label, to, onClick, disabled }) {
@@ -92,8 +104,10 @@ function DropItem({ icon: Icon, label, to, onClick, disabled }) {
 }
 
 function UserDropdown({ onClose }) {
-  const { user, logout } = useAuth()
+  const { user, logout, openProfile } = useAuth()
   const navigate = useNavigate()
+
+  const openSettings = () => { onClose(); openProfile() }
 
   const doLogout = () => {
     logout()
@@ -121,27 +135,27 @@ function UserDropdown({ onClose }) {
           <>
             <DropItem icon={UserCircle2} label="Мой канал" to="/author/author-platformy" onClick={onClose} />
             <DropItem icon={LayoutDashboard} label="Студия" to="/studio" onClick={onClose} />
-            <DropItem icon={BarChart3} label="Аналитика" disabled />
+            <DropItem icon={BarChart3} label="Аналитика" to="/studio/analytics" onClick={onClose} />
             <div className="mx-3 my-1 h-px bg-navy/20" />
-            <DropItem icon={Bookmark} label="Закладки" disabled />
-            <DropItem icon={Clock} label="История просмотров" disabled />
-            <DropItem icon={Bell} label="Уведомления" disabled />
-            <DropItem icon={Settings} label="Настройки" disabled />
+            <DropItem icon={Bookmark} label="Закладки" to="/bookmarks" onClick={onClose} />
+            <DropItem icon={Clock} label="История просмотров" to="/history" onClick={onClose} />
+            <DropItem icon={Bell} label="Уведомления" to="/notifications" onClick={onClose} />
+            <DropItem icon={Settings} label="Настройки" onClick={openSettings} />
           </>
         ) : (
           <>
-            <DropItem icon={Bookmark} label="Закладки" disabled />
-            <DropItem icon={Clock} label="История просмотров" disabled />
-            <DropItem icon={Bell} label="Уведомления" disabled />
+            <DropItem icon={Bookmark} label="Закладки" to="/bookmarks" onClick={onClose} />
+            <DropItem icon={Clock} label="История просмотров" to="/history" onClick={onClose} />
+            <DropItem icon={Bell} label="Уведомления" to="/notifications" onClick={onClose} />
             <DropItem icon={UserCircle2} label="Стать автором" to="/about#apply" onClick={onClose} />
-            <DropItem icon={Settings} label="Настройки" disabled />
+            <DropItem icon={Settings} label="Настройки" onClick={openSettings} />
           </>
         )}
 
         <div className="mx-3 my-1 h-px bg-navy/20" />
         <button
           onClick={doLogout}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-clay transition-colors hover:bg-clay/8"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-clay transition-colors hover:bg-clay/[0.08]"
         >
           <LogOut size={15} className="shrink-0" />
           Выйти
@@ -156,11 +170,7 @@ function AuthButton() {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  useEffect(() => {
-    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    window.addEventListener('mousedown', onDown)
-    return () => window.removeEventListener('mousedown', onDown)
-  }, [])
+  useClickOutside(ref, () => setOpen(false))
 
   if (!user) {
     return (
@@ -180,6 +190,8 @@ function AuthButton() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={user.name}
+        aria-haspopup="menu"
+        aria-expanded={open}
         className="grid h-9 w-9 shrink-0 place-items-center rounded-full font-display text-sm font-bold text-cream transition-opacity hover:opacity-80"
         style={{ background: bg }}
       >
@@ -199,17 +211,15 @@ function AddContentButton() {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  useEffect(() => {
-    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    window.addEventListener('mousedown', onDown)
-    return () => window.removeEventListener('mousedown', onDown)
-  }, [])
+  useClickOutside(ref, () => setOpen(false))
 
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border-2 border-clay px-3.5 py-1.5 text-sm font-semibold text-clay transition-colors hover:bg-clay/8"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex items-center gap-1.5 rounded-full border-2 border-clay px-3.5 py-1.5 text-sm font-semibold text-clay transition-colors hover:bg-clay/[0.08]"
       >
         <Plus size={16} strokeWidth={2.5} />
         Добавить
@@ -269,7 +279,7 @@ function StudioUserDropdown({ onClose, onSettings }) {
         <div className="mx-3 my-1 h-px bg-navy/20" />
         <button
           onClick={doLogout}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-clay transition-colors hover:bg-clay/8"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-clay transition-colors hover:bg-clay/[0.08]"
         >
           <LogOut size={15} className="shrink-0" />
           Выйти
@@ -284,11 +294,7 @@ function StudioAuthButton() {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
-  useEffect(() => {
-    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    window.addEventListener('mousedown', onDown)
-    return () => window.removeEventListener('mousedown', onDown)
-  }, [])
+  useClickOutside(ref, () => setOpen(false))
 
   if (!user) {
     return (
@@ -306,6 +312,8 @@ function StudioAuthButton() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={user.name}
+        aria-haspopup="menu"
+        aria-expanded={open}
         className="grid h-9 w-9 shrink-0 place-items-center rounded-full font-display text-sm font-bold text-cream transition-opacity hover:opacity-80"
         style={{ background: '#E07A5F' }}
       >
@@ -326,7 +334,7 @@ function StudioAuthButton() {
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
-  const { showLogin, closeLogin, showProfile, showAddContent } = useAuth()
+  const { showLogin, showProfile, showAddContent } = useAuth()
   const location = useLocation()
 
   const isStudio = location.pathname.startsWith('/studio')
@@ -352,9 +360,14 @@ export default function Nav() {
               <Logo />
               <div className="flex items-center gap-0.5">
                 <div className="hidden items-center gap-0.5 sm:flex">
-                  {STUDIO_LINKS.map(({ to, label, exact }) => {
-                    const isActive = exact ? location.pathname === to : location.pathname === to
-                    return <Link key={to} to={to} className={linkCls(isActive)}>{label}</Link>
+                  {STUDIO_LINKS.map(({ to, label }) => {
+                    const active = location.pathname === to
+                    return (
+                      <Link key={to} to={to} className={`relative ${linkCls(active)}`}>
+                        {label}
+                        {active && <Underline layoutId="studio-underline" />}
+                      </Link>
+                    )
                   })}
                   <div className="mx-2 h-5 w-px bg-navy/15" />
                 </div>
@@ -365,9 +378,14 @@ export default function Nav() {
               </div>
             </nav>
             <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-t border-navy/10 px-4 py-1.5 sm:hidden">
-              {STUDIO_LINKS.map(({ to, label, exact }) => {
-                const isActive = exact ? location.pathname === to : location.pathname === to
-                return <Link key={to} to={to} className={linkCls(isActive)}>{label}</Link>
+              {STUDIO_LINKS.map(({ to, label }) => {
+                const active = location.pathname === to
+                return (
+                  <Link key={to} to={to} className={`relative ${linkCls(active)}`}>
+                    {label}
+                    {active && <Underline layoutId="studio-underline-mobile" />}
+                  </Link>
+                )
               })}
             </div>
           </>
@@ -409,7 +427,7 @@ export default function Nav() {
         {open && !isStudio && (
           <div className="border-t border-navy/10 bg-cream md:hidden">
             <div className="wrap flex flex-col gap-1 py-3">
-              <NavLinks onClick={() => setOpen(false)} />
+              <NavLinks onClick={() => setOpen(false)} underlineId="nav-underline-mobile" />
             </div>
           </div>
         )}

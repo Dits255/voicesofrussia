@@ -9,6 +9,9 @@
 
   html {
     scroll-behavior: smooth;
+    /* без «резинки» при скролле за пределы страницы — шапка и футер остаются на месте */
+    overscroll-behavior-y: none;
+    @apply bg-cream;
   }
 
   body {
@@ -68,6 +71,21 @@
     display: none;
   }
 
+  /* Скелетон-заглушка с шиммером (страницы и изображения в процессе загрузки) */
+  .skeleton {
+    @apply relative overflow-hidden bg-navy/[0.08];
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+  }
+
   /* Типографика тела статьи */
   .article-body {
     @apply text-[1.075rem] leading-[1.85] text-ink/90;
@@ -97,6 +115,21 @@
     @apply font-semibold text-navy;
   }
   .article-body blockquote {
-    @apply my-7 border-l-4 border-clay pl-5 text-xl font-medium italic text-navy;
+    @apply my-8 rounded-r-xl bg-white/60 py-3 pl-5 pr-5 text-xl font-medium italic leading-relaxed text-navy shadow-sm;
+    border-left: 4px solid var(--accent, #e07a5f);
+  }
+
+  /* Лид: первый абзац-курсив (если статья начинается с него) */
+  .article-body > p:first-of-type:has(> em:only-child) {
+    @apply text-lg text-ink/60;
+  }
+
+  /* Буквица в первом «настоящем» абзаце */
+  .article-body > p:first-of-type:not(:has(> em:only-child))::first-letter,
+  .article-body > p:first-of-type:has(> em:only-child) + p::first-letter {
+    @apply float-left mr-2.5 mt-1 font-display font-extrabold;
+    font-size: 3.3em;
+    line-height: 0.82;
+    color: var(--accent, #e07a5f);
   }
 }

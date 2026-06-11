@@ -1,22 +1,27 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AuthProvider } from './context/AuthContext'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
-import Home from './pages/Home'
-import Home2 from './pages/Home2'
-import Feed from './pages/Feed'
-import Cultures from './pages/Cultures'
-import Culture from './pages/Culture'
-import Story from './pages/Story'
-import Author from './pages/Author'
-import Authors from './pages/Authors'
-import About from './pages/About'
-import Subscriptions from './pages/Subscriptions'
-import StudioGuidelines from './pages/StudioGuidelines'
-import StudioAudience from './pages/StudioAudience'
-import NotFound from './pages/NotFound'
+
+const Home = lazy(() => import('./pages/Home'))
+const Home2 = lazy(() => import('./pages/Home2'))
+const Feed = lazy(() => import('./pages/Feed'))
+const Cultures = lazy(() => import('./pages/Cultures'))
+const Culture = lazy(() => import('./pages/Culture'))
+const Story = lazy(() => import('./pages/Story'))
+const Author = lazy(() => import('./pages/Author'))
+const Authors = lazy(() => import('./pages/Authors'))
+const About = lazy(() => import('./pages/About'))
+const Subscriptions = lazy(() => import('./pages/Subscriptions'))
+const Bookmarks = lazy(() => import('./pages/Bookmarks'))
+const History = lazy(() => import('./pages/History'))
+const Notifications = lazy(() => import('./pages/Notifications'))
+const StudioAnalytics = lazy(() => import('./pages/StudioAnalytics'))
+const StudioGuidelines = lazy(() => import('./pages/StudioGuidelines'))
+const StudioAudience = lazy(() => import('./pages/StudioAudience'))
+const NotFound = lazy(() => import('./pages/NotFound'))
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation()
@@ -31,6 +36,25 @@ function ScrollToTop() {
     window.scrollTo({ top: 0 })
   }, [pathname, hash])
   return null
+}
+
+// Скелетон, пока подгружается чанк страницы
+function PageFallback() {
+  return (
+    <div className="wrap py-10">
+      <div className="skeleton mb-3 h-4 w-28 rounded-full" />
+      <div className="skeleton mb-10 h-11 w-72 max-w-full rounded-xl" />
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i}>
+            <div className="skeleton aspect-[16/10] rounded-xl" />
+            <div className="skeleton mt-3 h-4 w-3/4 rounded-full" />
+            <div className="skeleton mt-2 h-4 w-1/2 rounded-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function Page({ children }) {
@@ -55,22 +79,28 @@ export default function App() {
       <Nav />
       <div className="flex-1">
         <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<Page><Home2 /></Page>} />
-            <Route path="/home2" element={<Page><Home /></Page>} />
-            <Route path="/feed" element={<Page><Feed /></Page>} />
-            <Route path="/cultures" element={<Page><Cultures /></Page>} />
-            <Route path="/culture/:slug" element={<Page><Culture /></Page>} />
-            <Route path="/story/:slug" element={<Page><Story /></Page>} />
-            <Route path="/author/:slug" element={<Page><Author /></Page>} />
-            <Route path="/authors" element={<Page><Authors /></Page>} />
-            <Route path="/about" element={<Page><About /></Page>} />
-            <Route path="/subscriptions" element={<Page><Subscriptions /></Page>} />
-            <Route path="/studio" element={<Page><Authors /></Page>} />
-            <Route path="/studio/guidelines" element={<Page><StudioGuidelines /></Page>} />
-            <Route path="/studio/audience" element={<Page><StudioAudience /></Page>} />
-            <Route path="*" element={<Page><NotFound /></Page>} />
-          </Routes>
+          <Suspense key={location.pathname} fallback={<PageFallback />}>
+            <Routes location={location}>
+              <Route path="/" element={<Page><Home2 /></Page>} />
+              <Route path="/home2" element={<Page><Home /></Page>} />
+              <Route path="/feed" element={<Page><Feed /></Page>} />
+              <Route path="/cultures" element={<Page><Cultures /></Page>} />
+              <Route path="/culture/:slug" element={<Page><Culture /></Page>} />
+              <Route path="/story/:slug" element={<Page><Story /></Page>} />
+              <Route path="/author/:slug" element={<Page><Author /></Page>} />
+              <Route path="/authors" element={<Page><Authors /></Page>} />
+              <Route path="/about" element={<Page><About /></Page>} />
+              <Route path="/subscriptions" element={<Page><Subscriptions /></Page>} />
+              <Route path="/bookmarks" element={<Page><Bookmarks /></Page>} />
+              <Route path="/history" element={<Page><History /></Page>} />
+              <Route path="/notifications" element={<Page><Notifications /></Page>} />
+              <Route path="/studio" element={<Page><Authors /></Page>} />
+              <Route path="/studio/analytics" element={<Page><StudioAnalytics /></Page>} />
+              <Route path="/studio/guidelines" element={<Page><StudioGuidelines /></Page>} />
+              <Route path="/studio/audience" element={<Page><StudioAudience /></Page>} />
+              <Route path="*" element={<Page><NotFound /></Page>} />
+            </Routes>
+          </Suspense>
         </AnimatePresence>
       </div>
       <Footer />

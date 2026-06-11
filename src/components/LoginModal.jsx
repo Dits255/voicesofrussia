@@ -94,10 +94,10 @@ export default function LoginModal() {
               )}
               <button type="submit" className="btn-navy w-full justify-center">Войти</button>
               <p className="text-center text-xs text-ink/45">
-                Войдите как <code className="rounded bg-navy/8 px-1.5 py-0.5 font-mono text-navy/65">author</code> чтобы увидеть панель автора
+                Войдите как <code className="rounded bg-navy/[0.08] px-1.5 py-0.5 font-mono text-navy/65">author</code> чтобы увидеть панель автора
               </p>
             </form>
-            <p className="mt-5 border-t border-navy/8 pt-5 text-center text-sm text-ink/55">
+            <p className="mt-5 border-t border-navy/[0.08] pt-5 text-center text-sm text-ink/55">
               Нет аккаунта?{' '}
               <button onClick={goRegister} className="font-semibold text-teal hover:underline">
                 Зарегистрироваться →
@@ -108,7 +108,7 @@ export default function LoginModal() {
           <>
             <h2 className="mb-6 font-display text-xl font-bold text-navy">Регистрация</h2>
             {regDone ? (
-              <div className="rounded-xl border border-teal/30 bg-teal/8 px-5 py-4 text-sm text-navy">
+              <div className="rounded-xl border border-teal/30 bg-teal/[0.08] px-5 py-4 text-sm text-navy">
                 <p className="font-semibold">Регистрация пока недоступна</p>
                 <p className="mt-1 text-ink/65">
                   Платформа в стадии запуска. Оставьте заявку в разделе{' '}
@@ -138,7 +138,7 @@ export default function LoginModal() {
                 <button type="submit" className="btn-navy w-full justify-center">Зарегистрироваться</button>
               </form>
             )}
-            <p className="mt-5 border-t border-navy/8 pt-5 text-center text-sm text-ink/55">
+            <p className="mt-5 border-t border-navy/[0.08] pt-5 text-center text-sm text-ink/55">
               Уже есть аккаунт?{' '}
               <button onClick={goLogin} className="font-semibold text-teal hover:underline">
                 Войти →

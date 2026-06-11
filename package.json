@@ -7,6 +7,7 @@
     "convert": "node scripts/convert-articles.mjs",
     "dev": "vite",
     "build": "vite build",
+    "lint": "eslint src",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -18,8 +19,14 @@
     "react-router-dom": "^6.26.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
     "mammoth": "^1.8.0",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",

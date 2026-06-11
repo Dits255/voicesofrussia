@@ -19,6 +19,7 @@ export default function Footer() {
         <div>
           <h4 className="mb-4 text-xs font-semibold uppercase tracking-widest text-cream/40">Разделы</h4>
           <ul className="space-y-2.5 text-sm">
+            <li><Link to="/" className="hover:text-teal">Главная</Link></li>
             <li><Link to="/feed" className="hover:text-teal">Лента</Link></li>
             <li><Link to="/about" className="hover:text-teal">О проекте</Link></li>
             <li><Link to="/about#apply" className="hover:text-teal">Стать автором</Link></li>

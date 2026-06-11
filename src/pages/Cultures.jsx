@@ -1,5 +1,6 @@
 import { cultures, contentByCulture } from '../lib/data'
 import { CultureCard } from '../components/cards'
+import { Reveal } from '../components/ui'
 
 export default function Cultures() {
   return (
@@ -14,13 +15,13 @@ export default function Cultures() {
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-        {cultures.map((c) => (
-          <div key={c.slug} className="flex flex-col">
+        {cultures.map((c, i) => (
+          <Reveal key={c.slug} index={i % 4} className="flex flex-col">
             <CultureCard culture={c} wide />
             <span className="mt-2 px-1 text-xs text-ink/45">
               {contentByCulture(c.slug).length} материалов
             </span>
-          </div>
+          </Reveal>
         ))}
       </div>
     </div>

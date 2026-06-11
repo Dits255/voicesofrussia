@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Search, X } from 'lucide-react'
 import { content, cultures, cultureName, bylineFor } from '../lib/data'
+import { useClickOutside } from '../lib/hooks'
 import { FormatBadge } from './ui'
 
 const norm = (s) => (s || '').toString().toLowerCase().replace(/ё/g, 'е')
@@ -18,12 +19,8 @@ export default function SearchBar({ autoFocus = false }) {
     if (autoFocus) inputRef.current?.focus()
   }, [autoFocus])
 
-  // клик вне строки — закрыть подсказки
-  useEffect(() => {
-    const onDown = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setFocused(false) }
-    window.addEventListener('mousedown', onDown)
-    return () => window.removeEventListener('mousedown', onDown)
-  }, [])
+  // клик вне строки или Escape — закрыть подсказки
+  useClickOutside(wrapRef, () => setFocused(false))
 
   const query = norm(q.trim())
 
@@ -116,7 +113,7 @@ export default function SearchBar({ autoFocus = false }) {
                   {peoples.map((c, i) => (
                     <Suggestion key={c.slug} index={i} onClick={() => go(`/culture/${c.slug}`)}>
                       <span className="h-9 w-9 shrink-0 overflow-hidden rounded-lg">
-                        <img src={c.cover} alt="" className="h-full w-full object-cover" />
+                        <img src={c.cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       </span>
                       <span className="min-w-0">
                         <span className="block font-semibold text-navy">{c.name}</span>
@@ -131,7 +128,7 @@ export default function SearchBar({ autoFocus = false }) {
                   {stories.map((s, i) => (
                     <Suggestion key={s.slug} index={peoples.length + i} onClick={() => go(`/story/${s.slug}`)}>
                       <span className="h-11 w-16 shrink-0 overflow-hidden rounded-lg">
-                        <img src={s.thumbnail} alt="" className="h-full w-full object-cover" />
+                        <img src={s.thumbnail} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="mb-1 flex items-center gap-2">

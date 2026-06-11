@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { X, Check, Upload, ImagePlus } from 'lucide-react'
+import { X, Check, Upload, ImagePlus, BookOpen, Mic, Clapperboard, Headphones, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+
+const TYPES = [
+  { id: 'Лонгрид', Icon: BookOpen, hint: 'Текстовая история с фото' },
+  { id: 'Интервью', Icon: Mic, hint: 'Разговор с героем' },
+  { id: 'Видео', Icon: Clapperboard, hint: 'Ролик или короткое видео' },
+  { id: 'Подкаст', Icon: Headphones, hint: 'Аудиовыпуск' },
+]
 
 const ACCEPT = {
   Лонгрид: '.doc,.docx,.md,.txt,.pdf',
@@ -29,14 +36,18 @@ const inputCls =
 
 export default function AddContentModal() {
   const { closeAddContent, addContentType } = useAuth()
+  // null — сначала экран выбора формата
+  const [type, setType] = useState(addContentType)
+  const fromChooser = addContentType == null
   const [title, setTitle] = useState('')
   const [desc, setDesc] = useState('')
   const [fileName, setFileName] = useState('')
   const [done, setDone] = useState(false)
 
+  useEffect(() => { setType(addContentType) }, [addContentType])
   useEffect(() => {
     setTitle(''); setDesc(''); setFileName(''); setDone(false)
-  }, [addContentType])
+  }, [type])
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') closeAddContent() }
@@ -71,11 +82,39 @@ export default function AddContentModal() {
           <X size={16} />
         </button>
 
-        <div className="eyebrow mb-1">{addContentType}</div>
-        <h2 className="mb-6 font-display text-xl font-bold text-navy">{TITLES[addContentType]}</h2>
+        {type == null ? (
+          <>
+            <div className="eyebrow mb-1">Студия</div>
+            <h2 className="mb-6 font-display text-xl font-bold text-navy">Что хотите добавить?</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {TYPES.map(({ id, Icon, hint }) => (
+                <button
+                  key={id}
+                  onClick={() => setType(id)}
+                  className="group rounded-2xl border border-navy/15 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-teal hover:shadow-card"
+                >
+                  <Icon size={22} className="text-teal" strokeWidth={1.8} />
+                  <div className="mt-2.5 font-display font-bold text-navy group-hover:text-teal">{id}</div>
+                  <div className="mt-0.5 text-xs text-ink/50">{hint}</div>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+        {fromChooser && !done && (
+          <button
+            onClick={() => setType(null)}
+            className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-ink/50 transition-colors hover:text-navy"
+          >
+            <ArrowLeft size={15} /> Другой формат
+          </button>
+        )}
+        <div className="eyebrow mb-1">{type}</div>
+        <h2 className="mb-6 font-display text-xl font-bold text-navy">{TITLES[type]}</h2>
 
         {done ? (
-          <div className="flex items-start gap-3 rounded-xl border border-teal/30 bg-teal/8 px-5 py-4 text-sm text-navy">
+          <div className="flex items-start gap-3 rounded-xl border border-teal/30 bg-teal/[0.08] px-5 py-4 text-sm text-navy">
             <Check size={18} className="mt-0.5 shrink-0 text-teal" />
             <div>
               <p className="font-semibold">Загрузка будет доступна при запуске платформы</p>
@@ -111,11 +150,11 @@ export default function AddContentModal() {
                 <span className={fileName ? 'font-medium text-navy' : 'text-ink/50'}>
                   {fileName || 'Выбрать файл'}
                 </span>
-                <span className="ml-auto shrink-0 text-xs text-ink/35">{HINTS[addContentType]}</span>
-                <input type="file" accept={ACCEPT[addContentType]} onChange={onFile} className="hidden" />
+                <span className="ml-auto shrink-0 text-xs text-ink/35">{HINTS[type]}</span>
+                <input type="file" accept={ACCEPT[type]} onChange={onFile} className="hidden" />
               </label>
             </div>
-            {addContentType === 'Видео' || addContentType === 'Подкаст' ? null : (
+            {type === 'Видео' || type === 'Подкаст' ? null : (
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-navy">Обложка</label>
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm font-semibold text-navy hover:border-teal">
@@ -129,6 +168,8 @@ export default function AddContentModal() {
               Отправить на модерацию
             </button>
           </form>
+        )}
+          </>
         )}
       </motion.div>
     </div>

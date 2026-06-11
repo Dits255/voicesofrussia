@@ -6,16 +6,25 @@ import { useAuth } from '../context/AuthContext'
 const inputCls =
   'w-full rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm text-navy outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/15'
 
-const DEFAULT = {
-  name: 'Автор платформы',
-  handle: 'author.platform',
-  region: 'Россия',
-  bio: 'Демонстрационный аккаунт платформы «Голоса России». Здесь будут ваши публикации, статистика и настройки профиля.',
+const DEFAULTS = {
+  author: {
+    name: 'Автор платформы',
+    handle: 'author.platform',
+    region: 'Россия',
+    bio: 'Демонстрационный аккаунт платформы «Голоса России». Здесь будут ваши публикации, статистика и настройки профиля.',
+  },
+  user: {
+    name: 'Пользователь платформы',
+    handle: 'user.platform',
+    region: 'Россия',
+    bio: 'Демонстрационный аккаунт читателя «Голосов России». Здесь будут ваши данные, подписки и настройки.',
+  },
 }
 
 export default function ProfileModal() {
-  const { closeProfile } = useAuth()
-  const [form, setForm] = useState(DEFAULT)
+  const { user, closeProfile } = useAuth()
+  const isAuthor = user?.role === 'author'
+  const [form, setForm] = useState(DEFAULTS[isAuthor ? 'author' : 'user'])
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -51,7 +60,7 @@ export default function ProfileModal() {
           <X size={16} />
         </button>
 
-        <div className="eyebrow mb-1">Студия</div>
+        <div className="eyebrow mb-1">{isAuthor ? 'Студия' : 'Аккаунт'}</div>
         <h2 className="mb-6 font-display text-xl font-bold text-navy">Настройки профиля</h2>
 
         <form onSubmit={submit} className="space-y-4">
@@ -82,7 +91,7 @@ export default function ProfileModal() {
             </label>
           </div>
           {saved ? (
-            <div className="flex items-center gap-2 rounded-xl border border-teal/30 bg-teal/8 px-4 py-3 text-sm text-navy">
+            <div className="flex items-center gap-2 rounded-xl border border-teal/30 bg-teal/[0.08] px-4 py-3 text-sm text-navy">
               <Check size={16} className="shrink-0 text-teal" />
               Сохранение будет доступно при запуске платформы
             </div>

@@ -21,8 +21,9 @@ export function AuthProvider({ children }) {
   const closeProfile = useCallback(() => setShowProfile(false), [])
 
   const [showAddContent, setShowAddContent] = useState(false)
-  const [addContentType, setAddContentType] = useState('Лонгрид')
-  const openAddContent  = useCallback((type = 'Лонгрид') => { setAddContentType(type); setShowAddContent(true) }, [])
+  // null — тип не выбран, попап сначала предложит выбрать формат
+  const [addContentType, setAddContentType] = useState(null)
+  const openAddContent  = useCallback((type = null) => { setAddContentType(type); setShowAddContent(true) }, [])
   const closeAddContent = useCallback(() => setShowAddContent(false), [])
 
   const login = useCallback((login, password) => {
