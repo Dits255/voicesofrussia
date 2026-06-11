@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { UserPlus, Check } from 'lucide-react'
 import { getAuthor, getCulture, contentByAuthor } from '../lib/data'
+import { useAuth } from '../context/AuthContext'
 import { AuthorAvatar } from '../components/ui'
 import { ContentCard } from '../components/cards'
 import NotFound from './NotFound'
@@ -15,13 +16,23 @@ const fmtViews = (n) =>
   n >= 1000 ? `${(n / 1000).toFixed(n / 1000 < 10 ? 1 : 0).replace('.', ',')} тыс.` : String(Math.round(n))
 
 function SubscribeButton({ slug }) {
+  const { user, openLogin } = useAuth()
   const [on, setOn] = useState(false)
-  useEffect(() => { try { setOn(localStorage.getItem(`golosa-sub:${slug}`) === '1') } catch { /* ignore */ } }, [slug])
+
+  useEffect(() => {
+    if (!user) return
+    try { setOn(localStorage.getItem(`golosa-sub:${slug}`) === '1') } catch { /* ignore */ }
+  }, [slug, user])
+
+  if (user?.slug === slug) return null
+
   const toggle = () => {
+    if (!user) { openLogin(); return }
     const v = !on
     setOn(v)
     try { localStorage.setItem(`golosa-sub:${slug}`, v ? '1' : '0') } catch { /* ignore */ }
   }
+
   return on ? (
     <button onClick={toggle} className="btn-ghost shrink-0"><Check size={17} /> Вы подписаны</button>
   ) : (
