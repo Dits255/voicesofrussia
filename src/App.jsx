@@ -14,7 +14,8 @@ import Author from './pages/Author'
 import Authors from './pages/Authors'
 import About from './pages/About'
 import Subscriptions from './pages/Subscriptions'
-import Studio from './pages/Studio'
+import StudioGuidelines from './pages/StudioGuidelines'
+import StudioAudience from './pages/StudioAudience'
 import NotFound from './pages/NotFound'
 
 function ScrollToTop() {
@@ -65,7 +66,9 @@ export default function App() {
             <Route path="/authors" element={<Page><Authors /></Page>} />
             <Route path="/about" element={<Page><About /></Page>} />
             <Route path="/subscriptions" element={<Page><Subscriptions /></Page>} />
-            <Route path="/studio" element={<Page><Studio /></Page>} />
+            <Route path="/studio" element={<Page><Authors /></Page>} />
+            <Route path="/studio/guidelines" element={<Page><StudioGuidelines /></Page>} />
+            <Route path="/studio/audience" element={<Page><StudioAudience /></Page>} />
             <Route path="*" element={<Page><NotFound /></Page>} />
           </Routes>
         </AnimatePresence>
