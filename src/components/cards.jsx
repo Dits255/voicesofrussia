@@ -103,14 +103,14 @@ export function CultureCard({ culture, wide = false }) {
         />
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-navy-deep/30 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 p-5 text-cream">
+      <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5 text-cream">
         <div
-          className="mb-2 inline-block h-1 w-10 rounded-full"
+          className="mb-1 sm:mb-2 inline-block h-1 w-8 sm:w-10 rounded-full"
           style={{ backgroundColor: culture.accent }}
         />
-        <h3 className="font-display text-2xl font-bold [overflow-wrap:anywhere]">{culture.name}</h3>
-        <p className="text-sm text-cream/70">{culture.region}</p>
-        <p className="mt-2 line-clamp-2 text-sm text-cream/85">{culture.tagline}</p>
+        <h3 className="font-display text-lg sm:text-2xl font-bold leading-tight [overflow-wrap:anywhere]">{culture.name}</h3>
+        <p className="text-xs sm:text-sm text-cream/70">{culture.region}</p>
+        <p className="mt-1 sm:mt-2 line-clamp-2 text-xs sm:text-sm text-cream/85">{culture.tagline}</p>
       </div>
     </Link>
   )

@@ -4,21 +4,17 @@ import { motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
-const tabCls = (active) =>
-  `flex-1 rounded-lg py-2 text-sm font-semibold transition-colors ${
-    active ? 'bg-white text-navy shadow-sm' : 'text-ink/50 hover:text-navy'
-  }`
+const inputCls =
+  'w-full rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm text-navy outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/15'
 
 export default function LoginModal() {
   const { login, closeLogin } = useAuth()
-  const [tab, setTab] = useState('login')
+  const [view, setView] = useState('login')
 
-  // Войти
   const [loginVal, setLoginVal] = useState('user')
   const [password, setPassword] = useState('password')
   const [loginError, setLoginError] = useState('')
 
-  // Зарегистрироваться
   const [regName, setRegName] = useState('')
   const [regEmail, setRegEmail] = useState('')
   const [regPwd, setRegPwd] = useState('')
@@ -43,6 +39,9 @@ export default function LoginModal() {
     setRegDone(true)
   }
 
+  const goRegister = () => { setView('register'); setRegDone(false) }
+  const goLogin = () => { setView('login'); setLoginError('') }
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <motion.div
@@ -65,49 +64,49 @@ export default function LoginModal() {
           <X size={16} />
         </button>
 
-        <div className="eyebrow mb-4">Голоса России</div>
+        <div className="eyebrow mb-1">Голоса России</div>
 
-        {/* Табы */}
-        <div className="mb-6 flex gap-1 rounded-xl bg-navy/[0.06] p-1">
-          <button onClick={() => { setTab('login'); setLoginError('') }} className={tabCls(tab === 'login')}>
-            Войти
-          </button>
-          <button onClick={() => { setTab('register'); setRegDone(false) }} className={tabCls(tab === 'register')}>
-            Зарегистрироваться
-          </button>
-        </div>
-
-        {tab === 'login' ? (
-          <form onSubmit={submitLogin} className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold text-navy">Логин</label>
-              <input
-                value={loginVal}
-                onChange={(e) => setLoginVal(e.target.value)}
-                autoComplete="username"
-                className="w-full rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm text-navy outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/15"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold text-navy">Пароль</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="w-full rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm text-navy outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/15"
-              />
-            </div>
-            {loginError && (
-              <p className="rounded-xl bg-clay/10 px-4 py-2.5 text-sm font-medium text-clay">{loginError}</p>
-            )}
-            <button type="submit" className="btn-navy w-full justify-center">Войти</button>
-            <p className="text-center text-xs text-ink/45">
-              Войдите как <code className="rounded bg-navy/8 px-1.5 py-0.5 font-mono text-navy/65">author</code> чтобы увидеть панель автора
+        {view === 'login' ? (
+          <>
+            <h2 className="mb-6 font-display text-xl font-bold text-navy">Вход</h2>
+            <form onSubmit={submitLogin} className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-navy">Логин</label>
+                <input
+                  value={loginVal}
+                  onChange={(e) => setLoginVal(e.target.value)}
+                  autoComplete="username"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-semibold text-navy">Пароль</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  className={inputCls}
+                />
+              </div>
+              {loginError && (
+                <p className="rounded-xl bg-clay/10 px-4 py-2.5 text-sm font-medium text-clay">{loginError}</p>
+              )}
+              <button type="submit" className="btn-navy w-full justify-center">Войти</button>
+              <p className="text-center text-xs text-ink/45">
+                Войдите как <code className="rounded bg-navy/8 px-1.5 py-0.5 font-mono text-navy/65">author</code> чтобы увидеть панель автора
+              </p>
+            </form>
+            <p className="mt-5 border-t border-navy/8 pt-5 text-center text-sm text-ink/55">
+              Нет аккаунта?{' '}
+              <button onClick={goRegister} className="font-semibold text-teal hover:underline">
+                Зарегистрироваться →
+              </button>
             </p>
-          </form>
+          </>
         ) : (
-          <form onSubmit={submitRegister} className="space-y-4">
+          <>
+            <h2 className="mb-6 font-display text-xl font-bold text-navy">Регистрация</h2>
             {regDone ? (
               <div className="rounded-xl border border-teal/30 bg-teal/8 px-5 py-4 text-sm text-navy">
                 <p className="font-semibold">Регистрация пока недоступна</p>
@@ -119,52 +118,33 @@ export default function LoginModal() {
                 </p>
               </div>
             ) : (
-              <>
+              <form onSubmit={submitRegister} className="space-y-4">
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-navy">Имя</label>
-                  <input
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    placeholder="Ваше имя"
-                    className="w-full rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm text-navy outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/15"
-                  />
+                  <input value={regName} onChange={(e) => setRegName(e.target.value)} placeholder="Ваше имя" className={inputCls} />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-navy">Email</label>
-                  <input
-                    type="email"
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm text-navy outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/15"
-                  />
+                  <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="you@example.com" className={inputCls} />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-navy">Пароль</label>
-                  <input
-                    type="password"
-                    value={regPwd}
-                    onChange={(e) => setRegPwd(e.target.value)}
-                    placeholder="Придумайте пароль"
-                    className="w-full rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm text-navy outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/15"
-                  />
+                  <input type="password" value={regPwd} onChange={(e) => setRegPwd(e.target.value)} placeholder="Придумайте пароль" className={inputCls} />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-navy">Подтверждение пароля</label>
-                  <input
-                    type="password"
-                    value={regPwd2}
-                    onChange={(e) => setRegPwd2(e.target.value)}
-                    placeholder="Повторите пароль"
-                    className="w-full rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm text-navy outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/15"
-                  />
+                  <label className="mb-1.5 block text-sm font-semibold text-navy">Подтверждение</label>
+                  <input type="password" value={regPwd2} onChange={(e) => setRegPwd2(e.target.value)} placeholder="Повторите пароль" className={inputCls} />
                 </div>
-                <button type="submit" className="btn-navy w-full justify-center">
-                  Зарегистрироваться
-                </button>
-              </>
+                <button type="submit" className="btn-navy w-full justify-center">Зарегистрироваться</button>
+              </form>
             )}
-          </form>
+            <p className="mt-5 border-t border-navy/8 pt-5 text-center text-sm text-ink/55">
+              Уже есть аккаунт?{' '}
+              <button onClick={goLogin} className="font-semibold text-teal hover:underline">
+                Войти →
+              </button>
+            </p>
+          </>
         )}
       </motion.div>
     </div>

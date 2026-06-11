@@ -347,24 +347,30 @@ export default function Nav() {
         }`}
       >
         {isStudio ? (
-          <nav className="wrap flex h-16 items-center justify-between gap-4">
-            <Logo />
-            <div className="flex items-center gap-0.5">
+          <>
+            <nav className="wrap flex h-16 items-center justify-between gap-2">
+              <Logo />
+              <div className="flex items-center gap-0.5">
+                <div className="hidden items-center gap-0.5 sm:flex">
+                  {STUDIO_LINKS.map(({ to, label, exact }) => {
+                    const isActive = exact ? location.pathname === to : location.pathname === to
+                    return <Link key={to} to={to} className={linkCls(isActive)}>{label}</Link>
+                  })}
+                  <div className="mx-2 h-5 w-px bg-navy/15" />
+                </div>
+                <AddContentButton />
+                <div className="ml-1">
+                  <StudioAuthButton />
+                </div>
+              </div>
+            </nav>
+            <div className="no-scrollbar flex gap-0.5 overflow-x-auto border-t border-navy/10 px-4 py-1.5 sm:hidden">
               {STUDIO_LINKS.map(({ to, label, exact }) => {
                 const isActive = exact ? location.pathname === to : location.pathname === to
-                return (
-                  <Link key={to} to={to} className={linkCls(isActive)}>
-                    {label}
-                  </Link>
-                )
+                return <Link key={to} to={to} className={linkCls(isActive)}>{label}</Link>
               })}
-              <div className="mx-2 h-5 w-px bg-navy/15" />
-              <AddContentButton />
-              <div className="ml-1">
-                <StudioAuthButton />
-              </div>
             </div>
-          </nav>
+          </>
         ) : (
           <nav className="wrap grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3">
             <Logo />
