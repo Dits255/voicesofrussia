@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Bookmark, Clock, Bell, Settings, LogOut, LayoutDashboard, BarChart3, UserCircle2 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 import SearchBar from './SearchBar'
+import LoginModal from './LoginModal'
 
 const links = [
   { to: '/feed', label: 'Лента' },
   { to: '/cultures', label: 'Народы', match: '/culture' },
-  { to: '/about', label: 'О проекте' },
 ]
 
 function Logo() {
@@ -32,8 +35,10 @@ function Logo() {
 }
 
 function NavLinks({ onClick }) {
+  const { user } = useAuth()
   const location = useLocation()
-  return links.map((l) => (
+  const all = user ? [...links, { to: '/subscriptions', label: 'Подписки' }] : links
+  return all.map((l) => (
     <NavLink
       key={l.to}
       to={l.to}
@@ -51,9 +56,130 @@ function NavLinks({ onClick }) {
   ))
 }
 
+function DropItem({ icon: Icon, label, to, onClick, disabled }) {
+  const base = `flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors`
+  const active = `text-ink/75 hover:bg-navy/5 hover:text-navy`
+  const off = `cursor-not-allowed text-ink/30`
+
+  if (to && !disabled) {
+    return (
+      <Link to={to} onClick={onClick} className={`${base} ${active}`}>
+        {Icon && <Icon size={15} className="shrink-0" />}
+        {label}
+      </Link>
+    )
+  }
+  return (
+    <button disabled={disabled} className={`${base} ${disabled ? off : active}`}>
+      {Icon && <Icon size={15} className="shrink-0" />}
+      {label}
+    </button>
+  )
+}
+
+function UserDropdown({ onClose }) {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const doLogout = () => {
+    logout()
+    onClose()
+    navigate('/')
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+      className="absolute right-0 top-[calc(100%+10px)] z-50 w-64 overflow-hidden rounded-2xl border border-navy/10 bg-cream shadow-card-hover"
+    >
+      {/* Шапка */}
+      <div className="border-b border-navy/10 px-4 py-3.5">
+        <p className="font-semibold text-navy">{user.name}</p>
+        <p className="text-xs text-ink/45">
+          {user.role === 'author' ? 'Автор платформы' : 'user@platform.ru'}
+        </p>
+      </div>
+
+      <div className="p-1.5">
+        {user.role === 'author' ? (
+          <>
+            <DropItem icon={UserCircle2} label="Мой канал" to="/authors" onClick={onClose} />
+            <DropItem icon={LayoutDashboard} label="Студия" to="/studio" onClick={onClose} />
+            <DropItem icon={BarChart3} label="Аналитика" disabled />
+            <DropItem icon={Settings} label="Настройки" disabled />
+          </>
+        ) : (
+          <>
+            <DropItem icon={Bookmark} label="Закладки" disabled />
+            <DropItem icon={Clock} label="История просмотров" disabled />
+            <DropItem icon={Bell} label="Уведомления" disabled />
+            <div className="my-1 h-px bg-navy/8" />
+            <DropItem icon={UserCircle2} label="Стать автором" to="/about#apply" onClick={onClose} />
+            <DropItem icon={Settings} label="Настройки" disabled />
+          </>
+        )}
+
+        <div className="my-1 h-px bg-navy/8" />
+        <button
+          onClick={doLogout}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-clay transition-colors hover:bg-clay/8"
+        >
+          <LogOut size={15} className="shrink-0" />
+          Выйти
+        </button>
+      </div>
+    </motion.div>
+  )
+}
+
+function AuthButton({ onLoginClick }) {
+  const { user } = useAuth()
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    window.addEventListener('mousedown', onDown)
+    return () => window.removeEventListener('mousedown', onDown)
+  }, [])
+
+  if (!user) {
+    return (
+      <button
+        onClick={onLoginClick}
+        className="rounded-full border border-navy/20 px-3.5 py-2 text-sm font-semibold text-navy transition-colors hover:border-teal hover:text-teal"
+      >
+        Войти
+      </button>
+    )
+  }
+
+  const bg = user.role === 'author' ? '#E07A5F' : '#1A3A5C'
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label={user.name}
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-full font-display text-sm font-bold text-cream transition-opacity hover:opacity-80"
+        style={{ background: bg }}
+      >
+        {user.initials}
+      </button>
+      <AnimatePresence>
+        {open && <UserDropdown onClose={() => setOpen(false)} />}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
   const location = useLocation()
 
   useEffect(() => setOpen(false), [location.pathname])
@@ -65,53 +191,57 @@ export default function Nav() {
   }, [])
 
   return (
-    <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled ? 'border-b border-navy/10 bg-cream/90 backdrop-blur-md' : 'bg-cream/60 backdrop-blur-sm'
-      }`}
-    >
-      <nav className="wrap grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3">
-        <Logo />
+    <>
+      <header
+        className={`sticky top-0 z-50 transition-all duration-300 ${
+          scrolled ? 'border-b border-navy/10 bg-cream/90 backdrop-blur-md' : 'bg-cream/60 backdrop-blur-sm'
+        }`}
+      >
+        <nav className="wrap grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3">
+          <Logo />
 
-        {/* Поиск — растягивается, по центру на десктопе, виден и на мобиле */}
-        <div className="md:px-2">
-          <div className="mx-auto w-full md:max-w-[34rem]">
-            <SearchBar />
-          </div>
-        </div>
-
-        {/* Справа: ссылки + кнопка */}
-        <div className="flex items-center gap-1">
-          <div className="hidden items-center gap-1 md:flex">
-            <NavLinks />
+          <div className="md:px-2">
+            <div className="mx-auto w-full md:max-w-[34rem]">
+              <SearchBar />
+            </div>
           </div>
 
-          {/* Бургер (мобильный) */}
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="grid h-10 w-10 place-items-center rounded-full border border-navy/15 text-navy md:hidden"
-            aria-label="Меню"
-            aria-expanded={open}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              {open ? (
-                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              ) : (
-                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              )}
-            </svg>
-          </button>
-        </div>
-      </nav>
+          <div className="flex items-center gap-1.5">
+            <div className="hidden items-center gap-1 md:flex">
+              <NavLinks />
+            </div>
 
-      {/* Мобильное меню: ссылки */}
-      {open && (
-        <div className="border-t border-navy/10 bg-cream md:hidden">
-          <div className="wrap flex flex-col gap-1 py-3">
-            <NavLinks onClick={() => setOpen(false)} />
+            <AuthButton onLoginClick={() => setShowLogin(true)} />
+
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="grid h-10 w-10 place-items-center rounded-full border border-navy/15 text-navy md:hidden"
+              aria-label="Меню"
+              aria-expanded={open}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                {open ? (
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                ) : (
+                  <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                )}
+              </svg>
+            </button>
           </div>
-        </div>
-      )}
-    </header>
+        </nav>
+
+        {open && (
+          <div className="border-t border-navy/10 bg-cream md:hidden">
+            <div className="wrap flex flex-col gap-1 py-3">
+              <NavLinks onClick={() => setOpen(false)} />
+            </div>
+          </div>
+        )}
+      </header>
+
+      <AnimatePresence>
+        {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+      </AnimatePresence>
+    </>
   )
 }

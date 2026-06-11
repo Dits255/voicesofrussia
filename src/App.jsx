@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { AuthProvider } from './context/AuthContext'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -12,6 +13,8 @@ import Story from './pages/Story'
 import Author from './pages/Author'
 import Authors from './pages/Authors'
 import About from './pages/About'
+import Subscriptions from './pages/Subscriptions'
+import Studio from './pages/Studio'
 import NotFound from './pages/NotFound'
 
 function ScrollToTop() {
@@ -45,6 +48,7 @@ function Page({ children }) {
 export default function App() {
   const location = useLocation()
   return (
+    <AuthProvider>
     <div className="flex min-h-screen flex-col overflow-x-clip">
       <ScrollToTop />
       <Nav />
@@ -60,11 +64,14 @@ export default function App() {
             <Route path="/author/:slug" element={<Page><Author /></Page>} />
             <Route path="/authors" element={<Page><Authors /></Page>} />
             <Route path="/about" element={<Page><About /></Page>} />
+            <Route path="/subscriptions" element={<Page><Subscriptions /></Page>} />
+            <Route path="/studio" element={<Page><Studio /></Page>} />
             <Route path="*" element={<Page><NotFound /></Page>} />
           </Routes>
         </AnimatePresence>
       </div>
       <Footer />
     </div>
+    </AuthProvider>
   )
 }
