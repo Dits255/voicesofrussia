@@ -9,9 +9,14 @@
 
   html {
     scroll-behavior: smooth;
-    /* без «резинки» при скролле за пределы страницы — шапка и футер остаются на месте */
-    overscroll-behavior-y: none;
-    @apply bg-cream;
+    /* Запасной цвет канвы; основную заливку зон «резинки» даёт
+       fixed-градиент позади контента (см. App.jsx) */
+    background-color: #faf8f4;
+  }
+
+  /* контент под fixed-шапкой: якорные переходы не прячутся за неё */
+  [id] {
+    scroll-margin-top: 5rem;
   }
 
   body {
@@ -124,12 +129,35 @@
     @apply text-lg text-ink/60;
   }
 
-  /* Буквица в первом «настоящем» абзаце */
-  .article-body > p:first-of-type:not(:has(> em:only-child))::first-letter,
-  .article-body > p:first-of-type:has(> em:only-child) + p::first-letter {
+  /* Буквица в первом «настоящем» абзаце (кроме вопросов и реплик интервью) */
+  .article-body > p:first-of-type:not(:has(> em:only-child)):not(.q):not(.a)::first-letter,
+  .article-body > p:first-of-type:has(> em:only-child) + p:not(.q):not(.a)::first-letter {
     @apply float-left mr-2.5 mt-1 font-display font-extrabold;
     font-size: 3.3em;
     line-height: 0.82;
     color: var(--accent, #e07a5f);
+  }
+
+  /* Вопрос интервью */
+  .article-body .q {
+    @apply mt-10 font-display text-lg font-bold leading-snug text-navy;
+  }
+  .article-body .q::before {
+    content: '—';
+    margin-right: 0.6rem;
+    color: var(--accent, #e07a5f);
+  }
+
+  /* Реплика собеседника: акцентное тире */
+  .article-body .a::before {
+    content: '—';
+    margin-right: 0.45rem;
+    font-weight: 700;
+    color: var(--accent, #e07a5f);
+  }
+
+  /* Примечание-сноска в конце статьи (помечается class="note" в HTML) */
+  .article-body .note {
+    @apply mt-10 border-t border-navy/10 pt-5 text-sm text-ink/55;
   }
 }

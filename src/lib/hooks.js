@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { authors } from './data'
+import { useEffect, useMemo, useState } from 'react'
+import { authors, contentByAuthor, sortByDate } from './data'
 
 // Состояние, зеркалируемое в localStorage
 export function useLocal(key, initial) {
@@ -38,6 +38,22 @@ const SEED_SUBS = authors.slice(0, 5).map((a) => a.slug)
 export const useSubscriptions = () => useUserList('golosa-subs', SEED_SUBS)
 
 export const useBookmarks = () => useUserList('golosa-bookmarks', [])
+
+// Демо-уведомления: свежие материалы авторов из подписок + прочитанность
+export function useNotifications() {
+  const { list: subs } = useSubscriptions()
+  const [read, setRead] = useLocal('golosa-notif-read', [])
+  const items = useMemo(
+    () => sortByDate(subs.flatMap((slug) => contentByAuthor(slug)))
+      .filter((c) => !c.isPlaceholder)
+      .slice(0, 12),
+    [subs],
+  )
+  const unread = items.filter((c) => !read.includes(c.slug)).length
+  const markRead = (slug) => setRead((p) => (p.includes(slug) ? p : [...p, slug]))
+  const markAll = () => setRead(items.map((c) => c.slug))
+  return { items, read, unread, markRead, markAll }
+}
 
 // --- История просмотров ---
 const HISTORY_KEY = 'golosa-history'

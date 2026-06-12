@@ -1,24 +1,14 @@
 import { Link, Navigate } from 'react-router-dom'
 import { Bell, CheckCheck } from 'lucide-react'
-import { contentByAuthor, sortByDate, authorsOf, formatDate } from '../lib/data'
-import { useLocal, useSubscriptions } from '../lib/hooks'
+import { authorsOf, formatDate } from '../lib/data'
+import { useNotifications } from '../lib/hooks'
 import { useAuth } from '../context/AuthContext'
 import { AuthorAvatar, FormatBadge } from '../components/ui'
 
 export default function Notifications() {
   const { user } = useAuth()
-  const { list: subs } = useSubscriptions()
-  const [read, setRead] = useLocal('golosa-notif-read', [])
+  const { items, read, unread, markRead, markAll } = useNotifications()
   if (!user) return <Navigate to="/" replace />
-
-  // Демо-уведомления: свежие материалы авторов, на которых подписан пользователь
-  const items = sortByDate(subs.flatMap((slug) => contentByAuthor(slug)))
-    .filter((c) => !c.isPlaceholder)
-    .slice(0, 12)
-
-  const unread = items.filter((c) => !read.includes(c.slug)).length
-  const markRead = (slug) => setRead((p) => (p.includes(slug) ? p : [...p, slug]))
-  const markAll = () => setRead(items.map((c) => c.slug))
 
   return (
     <div className="wrap py-10">
@@ -44,7 +34,7 @@ export default function Notifications() {
                 key={item.slug}
                 to={`/story/${item.slug}`}
                 onClick={() => markRead(item.slug)}
-                className={`flex items-center gap-4 rounded-2xl p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover ${
+                className={`flex items-center gap-3 rounded-2xl p-3.5 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover sm:gap-4 sm:p-4 ${
                   isRead ? 'bg-white/60' : 'bg-white'
                 }`}
               >

@@ -38,15 +38,15 @@ function DeltaChip({ value }) {
 
 function KpiTile({ icon: Icon, label, value, format, delta }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-card">
-      <div className="flex items-center justify-between">
-        <Icon size={18} className="text-teal" />
+    <div className="rounded-2xl bg-white p-3.5 shadow-card sm:p-4">
+      <div className="flex items-center justify-between gap-1">
+        <Icon size={18} className="shrink-0 text-teal" />
         <DeltaChip value={delta} />
       </div>
-      <div className="mt-2 font-display text-2xl font-extrabold text-navy">
+      <div className="mt-2 font-display text-xl font-extrabold text-navy sm:text-2xl">
         <CountUp value={value} format={format} />
       </div>
-      <div className="text-xs uppercase tracking-wide text-ink/45">{label}</div>
+      <div className="text-[11px] uppercase tracking-wide text-ink/45 sm:text-xs">{label}</div>
     </div>
   )
 }
@@ -81,16 +81,20 @@ function ViewsChart({ data }) {
     setHover(Math.min(data.length - 1, Math.max(0, i)))
   }
 
-  // позиция тултипа в % ширины; у краёв прижимаем, чтобы не выходил за график
+  // позиция тултипа и точки в % — работают при любом растяжении SVG
   const tipLeft = hover != null ? (pts[hover][0] / W) * 100 : 0
+  const tipTop = hover != null ? (pts[hover][1] / H) * 100 : 0
   const tipShift = tipLeft < 12 ? '0%' : tipLeft > 88 ? '-100%' : '-50%'
 
   return (
     <div>
       <div className="relative" ref={ref}>
+        {/* preserveAspectRatio=none + фикс. высота: на мобильном график не сплющивается;
+            touch-pan-y — палец по графику двигает тултип, вертикальный скролл страницы работает */}
         <svg
           viewBox={`0 0 ${W} ${H}`}
-          className="w-full touch-none"
+          preserveAspectRatio="none"
+          className="h-44 w-full touch-pan-y sm:h-52"
           role="img"
           aria-label="График просмотров за 30 дней"
           onPointerMove={onMove}
@@ -102,51 +106,60 @@ function ViewsChart({ data }) {
               <stop offset="0%" stopColor={TEAL} stopOpacity="0.22" />
               <stop offset="100%" stopColor={TEAL} stopOpacity="0" />
             </linearGradient>
+            {/* Маска-«шторка»: график проявляется слева направо в координатах viewBox,
+                поэтому работает при любом растяжении SVG (pathLength с non-scaling-stroke глючит) */}
+            <clipPath id="views-reveal">
+              <motion.rect
+                x="0" y="0" height={H}
+                initial={{ width: 0 }}
+                animate={{ width: W }}
+                transition={{ duration: 1.1, ease: 'easeOut' }}
+              />
+            </clipPath>
           </defs>
           {[0.25, 0.5, 0.75].map((t) => (
-            <line key={t} x1={P} x2={W - P} y1={P + t * (H - 2 * P)} y2={P + t * (H - 2 * P)} stroke="#1A3A5C" strokeOpacity="0.07" />
+            <line key={t} x1={P} x2={W - P} y1={P + t * (H - 2 * P)} y2={P + t * (H - 2 * P)} stroke="#1A3A5C" strokeOpacity="0.07" vectorEffect="non-scaling-stroke" />
           ))}
-          <motion.path
-            d={area}
-            fill="url(#views-fill)"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.6 }}
-          />
-          <motion.path
-            d={line}
-            fill="none"
-            stroke={TEAL}
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.2, ease: 'easeOut' }}
-          />
+          <g clipPath="url(#views-reveal)">
+            <path d={area} fill="url(#views-fill)" />
+            <path
+              d={line}
+              fill="none"
+              stroke={TEAL}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          </g>
           {hover != null && (
-            <g>
-              <line
-                x1={pts[hover][0]} x2={pts[hover][0]} y1={P} y2={H - P}
-                stroke="#1A3A5C" strokeOpacity="0.25" strokeDasharray="3 4"
-              />
-              <circle cx={pts[hover][0]} cy={pts[hover][1]} r="5" fill={TEAL} stroke="#FAF8F4" strokeWidth="2.5" />
-            </g>
+            <line
+              x1={pts[hover][0]} x2={pts[hover][0]} y1={P} y2={H - P}
+              stroke="#1A3A5C" strokeOpacity="0.25" strokeDasharray="3 4" vectorEffect="non-scaling-stroke"
+            />
           )}
         </svg>
 
         {hover != null && (
-          <div
-            className="pointer-events-none absolute -top-1 z-10 rounded-xl bg-navy px-3 py-1.5 text-cream shadow-card-hover"
-            style={{ left: `${tipLeft}%`, transform: `translateX(${tipShift})` }}
-          >
-            <div className="whitespace-nowrap font-display text-sm font-bold">{fmtNum(data[hover])} просмотров</div>
-            <div className="whitespace-nowrap text-xs text-cream/60">{dateOf(hover)}</div>
-          </div>
+          <>
+            {/* точка-индикатор — HTML, чтобы не искажалась при растяжении SVG */}
+            <span
+              className="pointer-events-none absolute z-10 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-cream"
+              style={{ left: `${tipLeft}%`, top: `${tipTop}%`, backgroundColor: TEAL }}
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute -top-2 z-10 rounded-xl bg-navy px-2.5 py-1 text-cream shadow-card-hover sm:px-3 sm:py-1.5"
+              style={{ left: `${tipLeft}%`, transform: `translateX(${tipShift})` }}
+            >
+              <div className="whitespace-nowrap font-display text-xs font-bold sm:text-sm">{fmtNum(data[hover])} просмотров</div>
+              <div className="whitespace-nowrap text-[11px] text-cream/60 sm:text-xs">{dateOf(hover)}</div>
+            </div>
+          </>
         )}
       </div>
-      <div className="mt-1 flex justify-between text-xs text-ink/40">
+      <div className="mt-2 flex justify-between text-xs text-ink/40">
         <span>30 дней назад</span>
-        <span>пик — {fmtNum(max)} в день</span>
+        <span className="hidden sm:inline">пик — {fmtNum(max)} в день</span>
         <span>сегодня</span>
       </div>
     </div>
@@ -196,8 +209,8 @@ export default function StudioAnalytics() {
         <ViewsChart data={SERIES} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="min-w-0 rounded-2xl bg-white p-5 shadow-card sm:p-6">
           <h2 className="mb-5 font-display text-lg font-bold text-navy">Топ материалов</h2>
           <div className="space-y-5">
             {top.map((item, i) => (
@@ -224,7 +237,7 @@ export default function StudioAnalytics() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-navy p-5 text-cream shadow-card sm:p-6">
+        <div className="min-w-0 rounded-2xl bg-navy p-5 text-cream shadow-card sm:p-6">
           <h2 className="mb-5 font-display text-lg font-bold">Откуда приходят читатели</h2>
           <div className="space-y-4">
             {SOURCES.map((s, i) => (

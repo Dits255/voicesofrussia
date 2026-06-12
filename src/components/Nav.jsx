@@ -6,7 +6,9 @@ import {
   UserCircle2, Plus,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { useClickOutside } from '../lib/hooks'
+import { useClickOutside, useNotifications } from '../lib/hooks'
+import { authorsOf, formatDate } from '../lib/data'
+import { AuthorAvatar } from './ui'
 import SearchBar from './SearchBar'
 import LoginModal from './LoginModal'
 import ProfileModal from './ProfileModal'
@@ -162,6 +164,87 @@ function UserDropdown({ onClose }) {
         </button>
       </div>
     </motion.div>
+  )
+}
+
+// Колокольчик уведомлений: счётчик непрочитанных + дропдаун со свежими
+function NotificationBell() {
+  const { user } = useAuth()
+  const { items, read, unread, markRead } = useNotifications()
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useClickOutside(ref, () => setOpen(false))
+
+  if (!user) return null
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label={unread > 0 ? `Уведомления — ${unread} непрочитанных` : 'Уведомления'}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full text-ink/60 transition-colors hover:bg-navy/5 hover:text-navy"
+      >
+        <Bell size={19} />
+        {unread > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-clay px-1 text-[10px] font-bold leading-none text-white">
+            {unread > 9 ? '9+' : unread}
+          </span>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-navy/10 bg-cream shadow-card-hover"
+          >
+            <div className="border-b border-navy/10 px-4 py-3 text-sm font-semibold text-navy">Уведомления</div>
+            <div className="max-h-80 overflow-y-auto p-1.5">
+              {items.length > 0 ? (
+                items.slice(0, 5).map((item) => {
+                  const author = authorsOf(item)[0]
+                  const isRead = read.includes(item.slug)
+                  return (
+                    <Link
+                      key={item.slug}
+                      to={`/story/${item.slug}`}
+                      onClick={() => { markRead(item.slug); setOpen(false) }}
+                      className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-navy/5"
+                    >
+                      {author && <AuthorAvatar author={author} size={32} className="mt-0.5" />}
+                      <span className="min-w-0 flex-1">
+                        <span className={`block truncate text-sm font-semibold ${isRead ? 'text-navy/60' : 'text-navy'}`}>
+                          {item.title}
+                        </span>
+                        <span className="block text-xs text-ink/45">
+                          {author?.name || 'Редакция'} · {formatDate(item.date)}
+                        </span>
+                      </span>
+                      {!isRead && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-teal" aria-label="Непрочитанное" />}
+                    </Link>
+                  )
+                })
+              ) : (
+                <p className="px-3 py-6 text-center text-sm text-ink/50">Уведомлений пока нет.</p>
+              )}
+            </div>
+            <Link
+              to="/notifications"
+              onClick={() => setOpen(false)}
+              className="block border-t border-navy/10 px-4 py-3 text-center text-sm font-semibold text-teal transition-colors hover:bg-navy/5"
+            >
+              Показать все
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
 
@@ -350,7 +433,7 @@ export default function Nav() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
           scrolled ? 'border-b border-navy/10 bg-cream/90 backdrop-blur-md' : 'bg-cream/60 backdrop-blur-sm'
         }`}
       >
@@ -372,7 +455,8 @@ export default function Nav() {
                   <div className="mx-2 h-5 w-px bg-navy/15" />
                 </div>
                 <AddContentButton />
-                <div className="ml-1">
+                <div className="ml-1 flex items-center gap-1">
+                  <NotificationBell />
                   <StudioAuthButton />
                 </div>
               </div>
@@ -404,6 +488,7 @@ export default function Nav() {
                 <NavLinks />
               </div>
 
+              <NotificationBell />
               <AuthButton />
 
               <button
@@ -432,6 +517,10 @@ export default function Nav() {
           </div>
         )}
       </header>
+
+      {/* распорка под fixed-шапку: h-16 + вторая строка студийных вкладок на мобильном */}
+      <div aria-hidden className="h-16" />
+      {isStudio && <div aria-hidden className="h-[45px] sm:hidden" />}
 
       <AnimatePresence>
         {showLogin && <LoginModal />}

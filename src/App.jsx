@@ -74,7 +74,10 @@ export default function App() {
   const location = useLocation()
   return (
     <AuthProvider>
-    <div className="flex min-h-screen flex-col overflow-x-clip">
+    {/* Прибитая к экрану подложка позади контента: при «резинке» в щели сверху
+        виден её кремовый верх (цвет страницы), снизу — navy (цвет футера). */}
+    <div aria-hidden className="fixed inset-0 -z-10 bg-[linear-gradient(to_bottom,#FAF8F4_50%,#1A3A5C_50%)]" />
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-cream">
       <ScrollToTop />
       <Nav />
       <div className="flex-1">
