@@ -52,6 +52,7 @@ function FilterDropdown({ label, options, value, onChange }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            data-tour="filter-menu"
             className="absolute left-0 top-[calc(100%+8px)] z-40 max-h-[18rem] w-56 overflow-y-auto rounded-2xl border border-navy/10 bg-cream p-1.5 shadow-card-hover"
           >
             <Option active={value === null} onClick={() => pick(null)}>Все</Option>
@@ -114,7 +115,7 @@ export default function Feed() {
       </header>
 
       {/* Компактная панель фильтров */}
-      <div className="mb-8 flex flex-wrap items-center gap-2.5 border-y border-navy/10 py-4">
+      <div data-tour="filters" className="mb-8 flex flex-wrap items-center gap-2.5 border-y border-navy/10 py-4">
         <FilterDropdown label="Формат" value={format} onChange={update('format', setFormat)}
           options={FORMATS.filter((f) => f.active).map((f) => ({ id: f.id, label: f.label }))} />
         <FilterDropdown label="Народ" value={culture} onChange={update('culture', setCulture)}
@@ -133,7 +134,7 @@ export default function Feed() {
         {/* Сетка */}
         <div>
           {items.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div data-tour="feed-grid" className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               {items.map((i, idx) => (
                 <Reveal key={i.slug} index={idx % 2} className="h-full">
                   <ContentCard item={i} />
@@ -150,7 +151,7 @@ export default function Feed() {
 
         {/* Сайдбар */}
         <aside className="lg:sticky lg:top-20 lg:self-start">
-          <div className="rounded-2xl bg-navy p-6 text-cream">
+          <div data-tour="now-reading" className="rounded-2xl bg-navy p-6 text-cream">
             <div className="eyebrow text-clay">Сейчас читают</div>
             <h2 className="mt-1 font-display text-xl font-bold">Топ недели</h2>
             <div className="mt-3 divide-y divide-cream/10">

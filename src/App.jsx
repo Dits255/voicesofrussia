@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { AuthProvider } from './context/AuthContext'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
+import Presentation from './components/Presentation'
 
 const Home = lazy(() => import('./pages/Home'))
 const Home2 = lazy(() => import('./pages/Home2'))
@@ -79,6 +80,7 @@ export default function App() {
     <div aria-hidden className="fixed inset-0 -z-10 bg-[linear-gradient(to_bottom,#FAF8F4_50%,#1A3A5C_50%)]" />
     <div className="flex min-h-screen flex-col overflow-x-clip bg-cream">
       <ScrollToTop />
+      <Presentation />
       <Nav />
       <div className="flex-1">
         <AnimatePresence mode="wait">

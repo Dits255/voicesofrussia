@@ -98,6 +98,7 @@ export default function SearchBar({ autoFocus = false }) {
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             style={{ x: '-50%' }}
+            data-tour="search-results"
             className="absolute left-1/2 top-[calc(100%+10px)] z-50 w-[min(32rem,92vw)] overflow-hidden rounded-2xl border border-navy/10 bg-cream shadow-card-hover"
           >
               <div className="max-h-[70vh] overflow-y-auto p-2">

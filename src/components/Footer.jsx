@@ -3,7 +3,7 @@ import { cultures } from '../lib/data'
 
 export default function Footer() {
   return (
-    <footer className="mt-24 bg-navy text-cream/80">
+    <footer data-tour="footer" className="mt-24 bg-navy text-cream/80">
       <div className="wrap grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <div className="font-display text-xl font-bold text-cream">

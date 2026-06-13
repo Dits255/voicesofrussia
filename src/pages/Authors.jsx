@@ -110,7 +110,7 @@ function StatTiles({ content, profile }) {
     { icon: FileText, label: 'Материалы', value: content.length },
   ]
   return (
-    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div data-tour="studio-stats" className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
       {tiles.map((t) => (
         <div key={t.label} className="rounded-2xl bg-white p-4 shadow-card">
           <t.icon size={18} className="text-teal" />
@@ -255,7 +255,7 @@ export default function Authors() {
       <ProfileHeader profile={profile} onEdit={openProfile} />
       <StatTiles content={content} profile={profile} />
 
-      <div className="mt-8">
+      <div data-tour="my-content" className="mt-8">
         <MyContent content={content} setContent={setContent} onAdd={() => openAddContent()} />
       </div>
     </div>

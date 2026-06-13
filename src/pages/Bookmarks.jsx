@@ -21,7 +21,7 @@ export default function Bookmarks() {
       </header>
 
       {items.length > 0 ? (
-        <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3">
+        <div data-tour="bookmarks-grid" className="grid gap-5 sm:grid-cols-2 md:grid-cols-3">
           {items.map((item) => <ContentCard key={item.slug} item={item} />)}
         </div>
       ) : (

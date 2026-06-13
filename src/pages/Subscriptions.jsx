@@ -44,7 +44,7 @@ export default function Subscriptions() {
           Авторы, на которых вы подписаны
         </p>
         {/* p-1 — чтобы ring при наведении не обрезался overflow-контейнером */}
-        <div className="no-scrollbar flex gap-6 overflow-x-auto p-1 pb-2">
+        <div data-tour="subs-authors" className="no-scrollbar flex gap-6 overflow-x-auto p-1 pb-2">
           {subscribedAuthors.map((author) => (
             <Link
               key={author.slug}

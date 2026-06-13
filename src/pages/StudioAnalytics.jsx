@@ -197,20 +197,20 @@ export default function StudioAnalytics() {
         <p className="mt-2 text-ink/55">Демо-данные за последние 30 дней.</p>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div data-tour="kpi" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiTile icon={Eye} label="Просмотры" value={TOTAL_VIEWS} format={fmtNum} delta={12} />
         <KpiTile icon={ThumbsUp} label="Лайки" value={likes} format={fmtNum} delta={8} />
         <KpiTile icon={UserPlus} label="Новые подписчики" value={86} delta={-3} />
         <KpiTile icon={Clock3} label="Среднее чтение" value={34} format={(n) => `${(n / 10).toFixed(1).replace('.', ',')} мин`} delta={5} />
       </div>
 
-      <div className="mt-6 rounded-2xl bg-white p-5 shadow-card sm:p-6">
+      <div data-tour="chart" className="mt-6 rounded-2xl bg-white p-5 shadow-card sm:p-6">
         <h2 className="mb-4 font-display text-lg font-bold text-navy">Просмотры за 30 дней</h2>
         <ViewsChart data={SERIES} />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="min-w-0 rounded-2xl bg-white p-5 shadow-card sm:p-6">
+        <div data-tour="top-content" className="min-w-0 rounded-2xl bg-white p-5 shadow-card sm:p-6">
           <h2 className="mb-5 font-display text-lg font-bold text-navy">Топ материалов</h2>
           <div className="space-y-5">
             {top.map((item, i) => (
@@ -237,7 +237,7 @@ export default function StudioAnalytics() {
           </div>
         </div>
 
-        <div className="min-w-0 rounded-2xl bg-navy p-5 text-cream shadow-card sm:p-6">
+        <div data-tour="sources" className="min-w-0 rounded-2xl bg-navy p-5 text-cream shadow-card sm:p-6">
           <h2 className="mb-5 font-display text-lg font-bold">Откуда приходят читатели</h2>
           <div className="space-y-4">
             {SOURCES.map((s, i) => (

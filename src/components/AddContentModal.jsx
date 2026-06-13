@@ -72,6 +72,7 @@ export default function AddContentModal() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 16, scale: 0.97 }}
         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        data-tour="add-modal"
         className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-cream p-6 shadow-card-hover sm:p-8"
       >
         <button
@@ -90,6 +91,7 @@ export default function AddContentModal() {
               {TYPES.map(({ id, Icon, hint }) => (
                 <button
                   key={id}
+                  data-type={id}
                   onClick={() => setType(id)}
                   className="group rounded-2xl border border-navy/15 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-teal hover:shadow-card"
                 >

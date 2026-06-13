@@ -129,7 +129,7 @@ export default function ArticleFeedback({ slug, cultureSlug = null }) {
 
   return (
     <div className="wrap mt-12">
-      <div className="mx-auto max-w-prose overflow-hidden rounded-2xl border border-navy/10 bg-cream-2/50 p-6 text-center sm:p-8">
+      <div data-tour="feedback" className="mx-auto max-w-prose overflow-hidden rounded-2xl border border-navy/10 bg-cream-2/50 p-6 text-center sm:p-8">
         {step !== 'done' && (
           <div className="mb-2 flex items-center justify-between">
             <div className="eyebrow">Ваше мнение</div>

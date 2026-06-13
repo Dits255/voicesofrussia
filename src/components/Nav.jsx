@@ -35,7 +35,7 @@ const linkCls = (active) =>
 
 function Logo() {
   return (
-    <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="Голоса России — на главную">
+    <Link to="/" data-tour="logo" className="group flex shrink-0 items-center gap-2.5" aria-label="Голоса России — на главную">
       <svg
         viewBox="0 0 80 80" width="48" height="48"
         className="shrink-0 transition-opacity group-hover:opacity-75"
@@ -75,8 +75,9 @@ function NavLinks({ onClick, underlineId = 'nav-underline' }) {
   const all = user ? [...links, { to: '/subscriptions', label: 'Подписки' }] : links
   return all.map((l) => {
     const active = location.pathname === l.to || (l.match && location.pathname.startsWith(l.match))
+    const tour = l.to === '/cultures' ? 'nav-cultures' : l.to === '/subscriptions' ? 'nav-subs' : undefined
     return (
-      <NavLink key={l.to} to={l.to} onClick={onClick} className={`relative ${linkCls(active)}`}>
+      <NavLink key={l.to} to={l.to} onClick={onClick} data-tour={tour} className={`relative ${linkCls(active)}`}>
         {l.label}
         {active && <Underline layoutId={underlineId} />}
       </NavLink>
@@ -84,21 +85,21 @@ function NavLinks({ onClick, underlineId = 'nav-underline' }) {
   })
 }
 
-function DropItem({ icon: Icon, label, to, onClick, disabled }) {
+function DropItem({ icon: Icon, label, to, onClick, disabled, tour }) {
   const base = `flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors`
   const active = `text-ink/75 hover:bg-navy/5 hover:text-navy`
   const off = `cursor-not-allowed text-ink/30`
 
   if (to && !disabled) {
     return (
-      <Link to={to} onClick={onClick} className={`${base} ${active}`}>
+      <Link to={to} onClick={onClick} data-tour={tour} className={`${base} ${active}`}>
         {Icon && <Icon size={15} className="shrink-0" />}
         {label}
       </Link>
     )
   }
   return (
-    <button disabled={disabled} onClick={onClick} className={`${base} ${disabled ? off : active}`}>
+    <button disabled={disabled} onClick={onClick} data-tour={tour} className={`${base} ${disabled ? off : active}`}>
       {Icon && <Icon size={15} className="shrink-0" />}
       {label}
     </button>
@@ -123,6 +124,7 @@ function UserDropdown({ onClose }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -6, scale: 0.97 }}
       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+      data-tour="user-menu"
       className="absolute right-0 top-[calc(100%+10px)] z-50 w-64 overflow-hidden rounded-2xl border border-navy/10 bg-cream shadow-card-hover"
     >
       <div className="border-b border-navy/10 px-4 py-3.5">
@@ -136,27 +138,28 @@ function UserDropdown({ onClose }) {
         {user.role === 'author' ? (
           <>
             <DropItem icon={UserCircle2} label="Мой канал" to="/author/author-platformy" onClick={onClose} />
-            <DropItem icon={LayoutDashboard} label="Студия" to="/studio" onClick={onClose} />
+            <DropItem icon={LayoutDashboard} label="Студия" to="/studio" onClick={onClose} tour="menu-studio" />
             <DropItem icon={BarChart3} label="Аналитика" to="/studio/analytics" onClick={onClose} />
             <div className="mx-3 my-1 h-px bg-navy/20" />
-            <DropItem icon={Bookmark} label="Закладки" to="/bookmarks" onClick={onClose} />
-            <DropItem icon={Clock} label="История просмотров" to="/history" onClick={onClose} />
+            <DropItem icon={Bookmark} label="Закладки" to="/bookmarks" onClick={onClose} tour="menu-bookmarks" />
+            <DropItem icon={Clock} label="История просмотров" to="/history" onClick={onClose} tour="menu-history" />
             <DropItem icon={Bell} label="Уведомления" to="/notifications" onClick={onClose} />
-            <DropItem icon={Settings} label="Настройки" onClick={openSettings} />
+            <DropItem icon={Settings} label="Настройки" onClick={openSettings} tour="menu-settings" />
           </>
         ) : (
           <>
-            <DropItem icon={Bookmark} label="Закладки" to="/bookmarks" onClick={onClose} />
-            <DropItem icon={Clock} label="История просмотров" to="/history" onClick={onClose} />
+            <DropItem icon={Bookmark} label="Закладки" to="/bookmarks" onClick={onClose} tour="menu-bookmarks" />
+            <DropItem icon={Clock} label="История просмотров" to="/history" onClick={onClose} tour="menu-history" />
             <DropItem icon={Bell} label="Уведомления" to="/notifications" onClick={onClose} />
             <DropItem icon={UserCircle2} label="Стать автором" to="/about#apply" onClick={onClose} />
-            <DropItem icon={Settings} label="Настройки" onClick={openSettings} />
+            <DropItem icon={Settings} label="Настройки" onClick={openSettings} tour="menu-settings" />
           </>
         )}
 
         <div className="mx-3 my-1 h-px bg-navy/20" />
         <button
           onClick={doLogout}
+          data-tour="menu-logout"
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-clay transition-colors hover:bg-clay/[0.08]"
         >
           <LogOut size={15} className="shrink-0" />
@@ -179,7 +182,7 @@ function NotificationBell() {
   if (!user) return null
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} data-tour="bell" className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={unread > 0 ? `Уведомления — ${unread} непрочитанных` : 'Уведомления'}
@@ -202,6 +205,7 @@ function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            data-tour="bell-menu"
             className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-navy/10 bg-cream shadow-card-hover"
           >
             <div className="border-b border-navy/10 px-4 py-3 text-sm font-semibold text-navy">Уведомления</div>
@@ -259,6 +263,7 @@ function AuthButton() {
     return (
       <button
         onClick={openLogin}
+        data-tour="auth"
         className="rounded-full border border-navy/20 px-3.5 py-2 text-sm font-semibold text-navy transition-colors hover:border-teal hover:text-teal"
       >
         Войти
@@ -269,7 +274,7 @@ function AuthButton() {
   const bg = user.role === 'author' ? '#E07A5F' : '#1A3A5C'
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} data-tour="avatar" className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={user.name}
@@ -297,7 +302,7 @@ function AddContentButton() {
   useClickOutside(ref, () => setOpen(false))
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} data-tour="add-content" className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
@@ -446,7 +451,12 @@ export default function Nav() {
                   {STUDIO_LINKS.map(({ to, label }) => {
                     const active = location.pathname === to
                     return (
-                      <Link key={to} to={to} className={`relative ${linkCls(active)}`}>
+                      <Link
+                        key={to}
+                        to={to}
+                        data-tour={`studio-tab-${to.split('/')[2] || 'home'}`}
+                        className={`relative ${linkCls(active)}`}
+                      >
                         {label}
                         {active && <Underline layoutId="studio-underline" />}
                       </Link>
@@ -478,13 +488,13 @@ export default function Nav() {
             <Logo />
 
             <div className="md:px-2">
-              <div className="mx-auto w-full md:max-w-[34rem]">
+              <div data-tour="search" className="mx-auto w-full md:max-w-[34rem]">
                 <SearchBar />
               </div>
             </div>
 
             <div className="flex items-center gap-1.5">
-              <div className="hidden items-center gap-0.5 md:flex">
+              <div data-tour="nav-links" className="hidden items-center gap-0.5 md:flex">
                 <NavLinks />
               </div>
 

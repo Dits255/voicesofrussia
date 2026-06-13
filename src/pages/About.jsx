@@ -1,6 +1,37 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { FORMATS } from '../lib/data'
+
+const applyInput = 'w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal'
+
+function ApplyForm() {
+  const [sent, setSent] = useState(false)
+  const submit = (e) => { e.preventDefault(); setSent(true) }
+
+  return (
+    <form data-tour="apply-form" onSubmit={submit} className="space-y-3 rounded-2xl bg-cream p-6 text-ink">
+      <h3 className="font-display text-lg font-bold text-navy">Заявка автора</h3>
+      {sent ? (
+        <div className="flex items-start gap-3 rounded-xl border border-teal/30 bg-teal/[0.08] px-5 py-4 text-sm text-navy">
+          <Check size={18} className="mt-0.5 shrink-0 text-teal" />
+          <div>
+            <p className="font-semibold">Заявка принята — спасибо!</p>
+            <p className="mt-1 text-ink/60">Это демо: при запуске платформы редакция свяжется с вами по почте.</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <input required placeholder="Имя" className={applyInput} />
+          <input required placeholder="Народ, который вы представляете" className={applyInput} />
+          <input required type="email" placeholder="E-mail" className={applyInput} />
+          <textarea placeholder="О чём хотите рассказать?" rows={3} className={applyInput} />
+          <button type="submit" className="btn-primary w-full">Отправить заявку</button>
+        </>
+      )}
+    </form>
+  )
+}
 
 const PRINCIPLES = [
   {
@@ -106,17 +137,7 @@ export default function About() {
               </ul>
             </div>
 
-            <form
-              onSubmit={(e) => { e.preventDefault(); alert('Спасибо! Это демо-форма — заявка не отправляется.') }}
-              className="space-y-3 rounded-2xl bg-cream p-6 text-ink"
-            >
-              <h3 className="font-display text-lg font-bold text-navy">Заявка автора</h3>
-              <input required placeholder="Имя" className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
-              <input required placeholder="Народ, который вы представляете" className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
-              <input required type="email" placeholder="E-mail" className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
-              <textarea placeholder="О чём хотите рассказать?" rows={3} className="w-full rounded-xl border border-navy/15 bg-white px-4 py-3 text-sm outline-none focus:border-teal" />
-              <button type="submit" className="btn-primary w-full">Отправить заявку</button>
-            </form>
+            <ApplyForm />
           </div>
         </div>
         <p className="mt-6 text-center text-sm text-ink/50">

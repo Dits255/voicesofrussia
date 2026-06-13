@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { MapPin, Languages, Users } from 'lucide-react'
@@ -15,13 +15,14 @@ const TABS = [
   { id: 'video', label: 'Видео' },
 ]
 
-function Stat({ icon: Icon, label, value }) {
+// Факт «журнальной врезкой»: без плашек, лейбл с акцентной иконкой и крупное значение
+function Stat({ icon: Icon, label, value, accent }) {
   return (
-    <div className="rounded-xl bg-cream/10 p-3 backdrop-blur-sm">
-      <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-cream/55">
-        <Icon size={13} aria-hidden /> {label}
+    <div className="min-w-0 flex-1 py-3 first:pt-0 last:pb-0 sm:px-6 sm:py-0 sm:first:pl-0 sm:last:pr-0">
+      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-cream/50">
+        <Icon size={14} style={{ color: accent }} aria-hidden /> {label}
       </div>
-      <div className="mt-1.5 font-semibold text-cream">{value}</div>
+      <div className="mt-1.5 font-display text-base font-bold leading-snug text-cream sm:text-lg">{value}</div>
     </div>
   )
 }
@@ -30,6 +31,16 @@ export default function Culture() {
   const { slug } = useParams()
   const culture = getCulture(slug)
   const [tab, setTab] = useState('all')
+
+  // Бегущее подчёркивание активного таба. Нарочно без layoutId:
+  // shared-layout-анимация внутри уходящей страницы подвешивает exit у AnimatePresence
+  const tabsRef = useRef(null)
+  const [bar, setBar] = useState(null)
+  useEffect(() => {
+    const btn = tabsRef.current?.querySelector(`[data-tab="${tab}"]`)
+    if (btn) setBar({ left: btn.offsetLeft + 8, width: btn.offsetWidth - 16 })
+  }, [tab])
+
   if (!culture) return <NotFound />
 
   const all = contentByCulture(slug)
@@ -60,17 +71,30 @@ export default function Culture() {
           <h1 className="font-display text-[1.6rem] font-extrabold leading-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl">{culture.name}</h1>
           <p className="mt-1 text-lg text-cream/70">самоназвание — {culture.selfName}</p>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-cream/85">{culture.description}</p>
-          <div className="mt-7 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-3">
-            <Stat icon={Languages} label="Язык" value={culture.language} />
-            <Stat icon={Users} label="Население" value={culture.population} />
-            <Stat icon={MapPin} label="Регион" value={culture.region} />
+          <div
+            data-tour="culture-facts"
+            className="mt-8 flex max-w-2xl flex-col divide-y divide-cream/15 sm:flex-row sm:divide-x sm:divide-y-0"
+          >
+            <Stat icon={Languages} label="Язык" value={culture.language} accent={culture.accent} />
+            <Stat icon={Users} label="Население" value={culture.population} accent={culture.accent} />
+            <Stat icon={MapPin} label="Регион" value={culture.region} accent={culture.accent} />
           </div>
         </div>
       </header>
 
       {/* Контент с табами */}
       <section className="wrap mt-12">
-        <div className="no-scrollbar mb-7 flex gap-2 overflow-x-auto border-b border-navy/10 pb-px">
+        <div ref={tabsRef} data-tour="culture-tabs" className="no-scrollbar relative mb-7 flex gap-2 overflow-x-auto border-b border-navy/10 pb-px">
+          {bar && (
+            <motion.span
+              className="absolute bottom-0 h-[2.5px] rounded-full"
+              style={{ backgroundColor: culture.accent }}
+              initial={false}
+              animate={{ left: bar.left, width: bar.width }}
+              transition={{ type: 'spring', stiffness: 420, damping: 35 }}
+              aria-hidden
+            />
+          )}
           {TABS.map((t) => {
             const count =
               t.id === 'all' ? all.length
@@ -79,6 +103,7 @@ export default function Culture() {
             return (
               <button
                 key={t.id}
+                data-tab={t.id}
                 onClick={() => setTab(t.id)}
                 className={`relative shrink-0 px-4 py-3 text-sm font-semibold transition-colors ${
                   tab === t.id ? '' : 'text-ink/55 hover:text-navy'
@@ -86,22 +111,13 @@ export default function Culture() {
                 style={tab === t.id ? { color: culture.accent } : undefined}
               >
                 {t.label} <span className="text-ink/35">{count}</span>
-                {tab === t.id && (
-                  <motion.span
-                    layoutId="culture-tab"
-                    transition={{ type: 'spring', stiffness: 420, damping: 35 }}
-                    className="absolute inset-x-2 bottom-0 h-[2.5px] rounded-full"
-                    style={{ backgroundColor: culture.accent }}
-                    aria-hidden
-                  />
-                )}
               </button>
             )
           })}
         </div>
 
         {items.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div data-tour="culture-stories" className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item, i) => (
               <Reveal key={item.slug} index={i % 3} className="h-full">
                 <ContentCard item={item} />
@@ -117,7 +133,7 @@ export default function Culture() {
 
       {/* Голоса народа */}
       {authorsByCulture(slug).length > 0 && (
-        <section className="wrap mt-16">
+        <section data-tour="culture-authors" className="wrap mt-16">
           <h2 className="mb-6 font-display text-2xl font-bold text-navy">Голоса народа</h2>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {authorsByCulture(slug).map((a) => (
@@ -138,7 +154,7 @@ export default function Culture() {
       )}
 
       {/* Похожие культуры */}
-      <section className="wrap mt-16">
+      <section data-tour="related-cultures" className="wrap mt-16">
         <h2 className="mb-6 font-display text-2xl font-bold text-navy">Похожие культуры</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {relatedCultures(slug, 3).map((c) => <CultureCard key={c.slug} culture={c} wide />)}

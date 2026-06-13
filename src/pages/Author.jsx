@@ -68,7 +68,9 @@ export default function Author() {
         {/* Аватар (заходит на подложку) + кнопка подписки */}
         <div className="-mt-12 flex items-end justify-between gap-4">
           <AuthorAvatar author={author} size={112} className="ring-4 ring-cream" />
-          <SubscribeButton slug={author.slug} />
+          <span data-tour="subscribe">
+            <SubscribeButton slug={author.slug} />
+          </span>
         </div>
 
         {/* Имя — строго ниже подложки */}
@@ -107,7 +109,7 @@ export default function Author() {
         </div>
 
         {/* Материалы */}
-        <section className="mt-10">
+        <section data-tour="author-content" className="mt-10">
           <h2 className="mb-6 font-display text-2xl font-bold text-navy">
             Материалы автора <span className="text-ink/35">{items.length}</span>
           </h2>

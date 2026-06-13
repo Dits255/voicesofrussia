@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { Play, Bookmark } from 'lucide-react'
+import { Play, Bookmark, Heart } from 'lucide-react'
 import {
   getContent, getCulture, loadArticleHtml,
   relatedContent, formatDate, cultureName, BYLINE_NOTE, authorsOf,
 } from '../lib/data'
-import { useBookmarks, recordVisit } from '../lib/hooks'
+import { useBookmarks, useLikes, hashOf, recordVisit } from '../lib/hooks'
 import { useAuth } from '../context/AuthContext'
 import { FormatBadge, AuthorAvatar, CoverImage } from '../components/ui'
 import { ContentCard } from '../components/cards'
 import ArticleFeedback from '../components/ArticleFeedback'
+import Comments from '../components/Comments'
 import NotFound from './NotFound'
 
 function AuthorLinks({ item, size = 26, dark = false }) {
@@ -42,6 +43,45 @@ function ReadingProgress({ color }) {
       className="fixed inset-x-0 top-16 z-40 h-[3px] origin-left"
       aria-hidden
     />
+  )
+}
+
+// Кнопка-сердечко с демо-счётчиком; для гостя открывает окно входа
+function LikeButton({ slug, dark = false }) {
+  const { user, openLogin } = useAuth()
+  const { has, toggle } = useLikes()
+  const on = !!user && has(slug)
+  const count = 24 + (hashOf(`likes:${slug}`) % 580) + (on ? 1 : 0)
+
+  const onClick = () => {
+    if (!user) { openLogin(); return }
+    toggle(slug)
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={on}
+      aria-label={on ? 'Убрать лайк' : 'Поставить лайк'}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold transition-colors ${
+        dark
+          ? on
+            ? 'border-cream/40 bg-cream/15 text-cream'
+            : 'border-cream/30 text-cream/85 hover:bg-cream/10'
+          : on
+            ? 'border-clay bg-clay/10 text-clay'
+            : 'border-navy/20 text-ink/65 hover:border-clay hover:text-clay'
+      }`}
+    >
+      <motion.span
+        animate={on ? { scale: [1, 1.45, 1] } : { scale: 1 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
+        className="grid"
+      >
+        <Heart size={14} fill={on ? 'currentColor' : 'none'} className={on && dark ? 'text-clay' : undefined} />
+      </motion.span>
+      {count}
+    </button>
   )
 }
 
@@ -115,7 +155,7 @@ function BookmarkButton({ slug, dark = false }) {
 function Related({ related }) {
   if (!related.length) return null
   return (
-    <section className="wrap mt-16">
+    <section data-tour="related" className="wrap mt-16">
       <h2 className="mb-6 font-display text-2xl font-bold text-navy">Похожие истории</h2>
       <div className="grid gap-5 md:grid-cols-3">
         {related.map((r) => <ContentCard key={r.slug} item={r} />)}
@@ -189,7 +229,10 @@ function VideoView({ item, culture, related }) {
             {item.topics?.map((t) => (
               <span key={t} className="text-sm text-teal">#{t.toLowerCase()}</span>
             ))}
-            <BookmarkButton slug={item.slug} />
+            <span className="ml-auto inline-flex items-center gap-2">
+              <LikeButton slug={item.slug} />
+              <BookmarkButton slug={item.slug} />
+            </span>
           </div>
 
           {/* Описание (как блок описания на YouTube) */}
@@ -216,6 +259,8 @@ function VideoView({ item, culture, related }) {
       </div>
 
       <ArticleFeedback slug={item.slug} cultureSlug={item.cultureSlug} />
+
+      <Comments slug={item.slug} />
 
       <Related related={related} />
     </div>
@@ -280,16 +325,24 @@ export default function Story() {
               {item.topics?.map((t) => (
                 <span key={t} className="chip bg-cream/15 text-cream/90">{t}</span>
               ))}
-              <BookmarkButton slug={item.slug} dark />
             </div>
             <h1 className="font-display text-3xl font-extrabold leading-tight sm:text-5xl">{item.title}</h1>
             {item.subtitle && <p className="mt-3 text-xl text-cream/80">{item.subtitle}</p>}
-            <div className="mt-6 text-sm text-cream/70">
+            <div data-tour="article-author" className="mt-6 text-sm text-cream/70">
               <AuthorLinks item={item} size={28} dark />
               <div className="mt-2 text-cream/55">
                 {authorsOf(item).length > 0 && `${BYLINE_NOTE} · `}
                 {formatDate(item.date)} · {item.readingTime} мин чтения
               </div>
+            </div>
+            {/* Действия отдельной строкой — чтобы не сливались с тегами выше */}
+            <div className="mt-6 flex flex-wrap items-center gap-2.5">
+              <span data-tour="like">
+                <LikeButton slug={item.slug} dark />
+              </span>
+              <span data-tour="bookmark">
+                <BookmarkButton slug={item.slug} dark />
+              </span>
             </div>
           </div>
         </div>
@@ -311,6 +364,8 @@ export default function Story() {
       </div>
 
       <ArticleFeedback slug={item.slug} cultureSlug={item.cultureSlug} />
+
+      <Comments slug={item.slug} />
 
       <Related related={related} />
     </article>

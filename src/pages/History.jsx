@@ -44,7 +44,7 @@ export default function History() {
       </header>
 
       {groups.length > 0 ? (
-        <div className="space-y-10">
+        <div data-tour="history-list" className="space-y-10">
           {groups.map((g) => (
             <section key={g.label}>
               <p className="mb-5 text-sm font-semibold uppercase tracking-widest text-ink/40">{g.label}</p>

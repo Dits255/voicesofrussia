@@ -108,6 +108,7 @@ export function CultureCard({ culture, wide = false }) {
   return (
     <MotionLink
       to={`/culture/${culture.slug}`}
+      data-tour={`culture-${culture.slug}`}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       style={{ rotateX: srx, rotateY: sry, transformPerspective: 800 }}

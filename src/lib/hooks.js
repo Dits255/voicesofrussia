@@ -39,6 +39,13 @@ export const useSubscriptions = () => useUserList('golosa-subs', SEED_SUBS)
 
 export const useBookmarks = () => useUserList('golosa-bookmarks', [])
 
+// Лайки материалов и лайки комментариев (ключи вида `slug` и `slug/commentId`)
+export const useLikes = () => useUserList('golosa-likes', [])
+export const useCommentLikes = () => useUserList('golosa-comment-likes', [])
+
+// Детерминированный «шум» из строки — стабильные демо-цифры (лайки, комментарии)
+export const hashOf = (s) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 7)
+
 // Демо-уведомления: свежие материалы авторов из подписок + прочитанность
 export function useNotifications() {
   const { list: subs } = useSubscriptions()
