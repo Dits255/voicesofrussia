@@ -115,7 +115,7 @@ function LikeButton({ slug, dark = false, variant = 'pill' }) {
       onClick={onClick}
       aria-pressed={on}
       aria-label={on ? 'Убрать лайк' : 'Поставить лайк'}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 h-8 text-sm font-semibold transition-colors ${
         dark
           ? on
             ? 'border-cream/40 bg-cream/15 text-cream'
@@ -191,7 +191,8 @@ function BookmarkButton({ slug, dark = false, variant = 'pill' }) {
       <button
         onClick={onClick}
         aria-pressed={on}
-        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold transition-colors ${
+        aria-label={on ? 'В закладках' : 'В закладки'}
+        className={`inline-flex items-center gap-1.5 rounded-full border px-3 h-8 text-sm font-semibold transition-colors ${
           dark
             ? on
               ? 'border-cream/40 bg-cream/15 text-cream'
@@ -202,7 +203,8 @@ function BookmarkButton({ slug, dark = false, variant = 'pill' }) {
         }`}
       >
         {mark}
-        {on ? 'В закладках' : 'В закладки'}
+        {/* На узких экранах — только иконка, чтобы текст не переносился на вторую строку */}
+        <span className="hidden sm:inline">{on ? 'В закладках' : 'В закладки'}</span>
       </button>
       {toastNode}
     </>
@@ -264,14 +266,14 @@ function ArticleSubscribe({ item }) {
   return on ? (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-full border border-cream/35 px-3.5 py-1.5 text-sm font-semibold text-cream/90 transition-colors hover:bg-cream/10"
+      className="inline-flex items-center gap-1.5 rounded-full border border-cream/35 px-3.5 h-8 text-sm font-semibold text-cream/90 transition-colors hover:bg-cream/10"
     >
       <Check size={16} /> Вы подписаны
     </button>
   ) : (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-full bg-clay px-3.5 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-clay-dark"
+      className="inline-flex items-center gap-1.5 rounded-full bg-clay px-3.5 h-8 text-sm font-semibold text-white transition-colors hover:bg-clay-dark"
     >
       <UserPlus size={16} /> Подписаться
     </button>
