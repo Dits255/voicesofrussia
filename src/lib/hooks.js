@@ -1,13 +1,50 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { authors, contentByAuthor, sortByDate } from './data'
 
-// Состояние, зеркалируемое в localStorage
+const readLocal = (key, initial) => {
+  try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : initial } catch { return initial }
+}
+
+// Подписчики по ключу — чтобы все экземпляры useLocal с одним ключом в одной
+// вкладке оставались синхронными (событие storage срабатывает только между вкладками)
+const channels = new Map()
+
+// Состояние, зеркалируемое в localStorage и общее для всех его читателей
 export function useLocal(key, initial) {
-  const [v, setV] = useState(() => {
-    try { const s = localStorage.getItem(key); return s ? JSON.parse(s) : initial } catch { return initial }
-  })
-  useEffect(() => { try { localStorage.setItem(key, JSON.stringify(v)) } catch { /* ignore */ } }, [key, v])
-  return [v, setV]
+  const [v, setV] = useState(() => readLocal(key, initial))
+
+  useEffect(() => {
+    let subs = channels.get(key)
+    if (!subs) { subs = new Set(); channels.set(key, subs) }
+    const onChange = (val) => setV(val)
+    subs.add(onChange)
+    // первый запуск: сидируем значение, если его ещё нет; иначе подтягиваем актуальное
+    if (localStorage.getItem(key) == null) {
+      try { localStorage.setItem(key, JSON.stringify(initial)) } catch { /* ignore */ }
+    } else {
+      setV(readLocal(key, initial))
+    }
+    const onStorage = (e) => { if (e.key === key) setV(readLocal(key, initial)) }
+    window.addEventListener('storage', onStorage)
+    return () => {
+      subs.delete(onChange)
+      if (subs.size === 0) channels.delete(key)
+      window.removeEventListener('storage', onStorage)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+
+  const set = useCallback((next) => {
+    const prev = readLocal(key, initial)
+    const val = typeof next === 'function' ? next(prev) : next
+    try { localStorage.setItem(key, JSON.stringify(val)) } catch { /* ignore */ }
+    const subs = channels.get(key)
+    if (subs && subs.size) subs.forEach((fn) => fn(val))
+    else setV(val)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+
+  return [v, set]
 }
 
 // Закрытие дропдауна по клику вне элемента и по Escape
