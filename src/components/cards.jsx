@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 import { Play } from 'lucide-react'
 import { getCulture, cultureName } from '../lib/data'
+import { hyphenate } from '../lib/hyphenate'
 import { FormatBadge, Byline, CoverImage } from './ui'
 
 const MotionLink = motion(Link)
@@ -39,7 +40,7 @@ export function VoiceCard({ item, className = '' }) {
         >
           {cultureName(item.cultureSlug) || 'Народы России'}
         </span>
-        <h3 className="font-display text-lg font-bold leading-snug [overflow-wrap:anywhere]">{item.title}</h3>
+        <h3 className="font-display text-lg font-bold leading-snug hyphens-auto break-words">{item.title}</h3>
       </div>
     </Link>
   )
@@ -76,7 +77,7 @@ export function ContentCard({ item }) {
         <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-teal">
           <span>{cultureName(item.cultureSlug) || 'Народы России'}</span>
         </div>
-        <h3 className="font-display text-lg font-bold leading-snug text-navy group-hover:text-teal [overflow-wrap:anywhere]">
+        <h3 className="font-display text-lg font-bold leading-snug text-navy group-hover:text-teal hyphens-auto break-words">
           {item.title}
         </h3>
         {item.subtitle && <p className="mt-1.5 line-clamp-2 text-sm text-ink/60">{item.subtitle}</p>}
@@ -131,7 +132,7 @@ export function CultureCard({ culture, wide = false }) {
           className="mb-1 sm:mb-2 inline-block h-1 w-8 sm:w-10 rounded-full"
           style={{ backgroundColor: culture.accent }}
         />
-        <h3 className="font-display text-lg sm:text-2xl font-bold leading-tight [overflow-wrap:anywhere]">{culture.name}</h3>
+        <h3 className="font-display text-lg sm:text-2xl font-bold leading-tight break-words">{hyphenate(culture.name)}</h3>
         <p className="text-xs sm:text-sm text-cream/70">{culture.region}</p>
         <p className="mt-1 sm:mt-2 line-clamp-2 text-xs sm:text-sm text-cream/85">{culture.tagline}</p>
       </div>

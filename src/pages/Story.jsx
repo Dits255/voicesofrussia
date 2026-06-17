@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { Play, Bookmark, Heart, Forward, Check, ArrowUp, UserPlus } from 'lucide-react'
+import { Play, Bookmark, Heart, Forward, Check, ArrowUp, UserPlus, List, ChevronDown } from 'lucide-react'
 import {
   getContent, getCulture, loadArticleHtml,
   relatedContent, formatDate, cultureName, BYLINE_NOTE, authorsOf,
@@ -282,57 +282,57 @@ function ArticleSubscribe({ item }) {
 
 // Прилипающий блок действий: рельс справа от текста на десктопе,
 // плавающий мини-блок снизу справа на телефоне (прячется при прокрутке вниз)
+const toTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+
+// Блок действий (лайк/закладка/поделиться + «наверх»). Закреплён СНИЗУ экрана:
+// на мобиле — в углу, на десктопе — в правом гаттере у колонки текста.
+// Появляется ниже шапки; на мобиле прячется при листании вниз и возвращается при
+// листании вверх; полностью скрывается у конца статьи, чтобы не наплывать на
+// «Похожие истории» и футер. К шапке не наплывает, т.к. всегда внизу экрана.
 function ReadingActions({ slug, title }) {
-  const [showTop, setShowTop] = useState(false)
-  const [hidden, setHidden] = useState(false)
-  const [past, setPast] = useState(false) // проскроллили ниже шапки — только тогда показываем блок
+  const [past, setPast] = useState(false)
+  const [atEnd, setAtEnd] = useState(false)
+  const [hidden, setHidden] = useState(false) // листаем вниз — прячем (мобайл)
 
   useEffect(() => {
     let lastY = window.scrollY
     let idle = null
     const onScroll = () => {
       const y = window.scrollY
-      setPast(y > 420)                                    // пока шапка на экране — блока нет
-      setShowTop(y > 600)
-      if (y > lastY + 4 && y > 300) setHidden(true)      // листаем вниз — прячем мини-блок
-      else if (y < lastY - 4) setHidden(false)            // листаем вверх — показываем
+      setPast(y > 420)
+      const end = document.querySelector('[data-article-end]')
+      setAtEnd(!!end && end.getBoundingClientRect().top < window.innerHeight - 80)
+      if (y > lastY + 4 && y > 300) setHidden(true)       // вниз — прячем
+      else if (y < lastY - 4) setHidden(false)             // вверх — показываем
       lastY = y
       clearTimeout(idle)
-      idle = setTimeout(() => setHidden(false), 700)      // остановились — возвращаем
+      idle = setTimeout(() => setHidden(false), 700)       // остановились — возвращаем
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     onScroll()
     return () => { window.removeEventListener('scroll', onScroll); clearTimeout(idle) }
   }, [])
 
-  const toTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+  const gone = !past || atEnd // прячем целиком (и пилюли, и «наверх»)
 
   return (
     <div
-      className={`fixed z-40 flex flex-col items-center gap-3 bottom-5 right-4 transition-all duration-300 lg:right-auto lg:bottom-8 lg:left-[calc(50%+23rem+1.25rem)] ${
-        !past
-          ? 'translate-y-24 opacity-0 pointer-events-none'
-          : hidden ? 'max-lg:translate-y-24 max-lg:opacity-0 max-lg:pointer-events-none' : ''
+      className={`fixed bottom-5 right-4 z-40 flex flex-col items-center gap-3 transition-all duration-300 lg:bottom-8 lg:right-auto lg:left-[calc(50%+23rem+1.25rem)] ${
+        gone
+          ? 'pointer-events-none translate-y-24 opacity-0'
+          : hidden ? 'max-lg:pointer-events-none max-lg:translate-y-24 max-lg:opacity-0' : ''
       }`}
     >
       <LikeButton slug={slug} variant="rail" />
       <BookmarkButton slug={slug} variant="rail" />
       <ShareButton title={title} />
-      <AnimatePresence>
-        {showTop && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.6 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            onClick={toTop}
-            aria-label="Наверх"
-            className={`${railCircle} border-transparent bg-navy text-cream hover:bg-navy/90`}
-          >
-            <ArrowUp size={18} />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      <button
+        onClick={toTop}
+        aria-label="Наверх"
+        className={`${railCircle} border-transparent bg-navy text-cream hover:bg-navy/90`}
+      >
+        <ArrowUp size={18} />
+      </button>
     </div>
   )
 }
@@ -346,6 +346,99 @@ function Related({ related }) {
         {related.map((r) => <ContentCard key={r.slug} item={r} />)}
       </div>
     </section>
+  )
+}
+
+const slugifyRu = (s = '') =>
+  s.toLowerCase().trim().replace(/[^\wа-яё]+/gi, '-').replace(/^-+|-+$/g, '') || 'section'
+
+// Оглавление лонгрида: строится по заголовкам .article-body. Закреплено ВНУТРИ блока
+// статьи (absolute + sticky), поэтому ограничено текстом — не наплывает на шапку/футер.
+function TableOfContents({ html }) {
+  const [items, setItems] = useState([])
+  const [active, setActive] = useState('')
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    if (!html) return
+    const root = document.querySelector('.article-body')
+    if (!root) return
+    const heads = [...root.querySelectorAll('h2, h3')]
+    const seen = new Set()
+    const toc = heads.map((el) => {
+      let id = el.id || slugifyRu(el.textContent)
+      while (seen.has(id)) id += '-x'
+      seen.add(id)
+      el.id = id
+      el.style.scrollMarginTop = '88px'
+      return { id, text: el.textContent, level: el.tagName === 'H3' ? 3 : 2 }
+    })
+    setItems(toc)
+    if (toc.length < 3) return
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const vis = entries.filter((e) => e.isIntersecting)
+        if (vis.length) setActive(vis[0].target.id)
+      },
+      { rootMargin: '-80px 0px -70% 0px', threshold: 0 },
+    )
+    heads.forEach((el) => obs.observe(el))
+    return () => obs.disconnect()
+  }, [html])
+
+  if (items.length < 3) return null
+
+  const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+  return (
+    <div className="pointer-events-none absolute inset-y-0 -left-10 hidden w-56 xl:block">
+      <nav aria-label="Содержание" className="pointer-events-auto sticky top-24 pr-8">
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          aria-expanded={!collapsed}
+          className="mb-4 flex w-full items-center gap-2 text-ink/45 transition-colors hover:text-navy"
+        >
+          <List size={15} strokeWidth={2.4} className="shrink-0 text-teal" />
+          <span className="text-[11px] font-bold uppercase tracking-[0.16em]">Содержание</span>
+          <ChevronDown
+            size={15}
+            className={`ml-auto shrink-0 transition-transform duration-300 ${collapsed ? '-rotate-90' : ''}`}
+          />
+        </button>
+        <AnimatePresence initial={false}>
+          {!collapsed && (
+            <motion.ul
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="overflow-hidden border-l border-navy/10 text-sm"
+            >
+              {items.map((it) => {
+                const on = active === it.id
+                return (
+                  <li key={it.id}>
+                    <button
+                      onClick={() => go(it.id)}
+                      className={`-ml-px block w-full border-l-2 py-1.5 text-left leading-snug transition-colors ${
+                        it.level === 3 ? 'pl-7' : 'pl-4'
+                      } ${
+                        on
+                          ? 'border-teal font-semibold text-teal'
+                          : 'border-transparent text-ink/55 hover:border-navy/30 hover:text-navy'
+                      }`}
+                    >
+                      {it.text}
+                    </button>
+                  </li>
+                )
+              })}
+            </motion.ul>
+          )}
+        </AnimatePresence>
+      </nav>
+    </div>
   )
 }
 
@@ -489,13 +582,20 @@ export default function Story() {
       <ReadingActions slug={item.slug} title={item.title} />
       {/* Шапка — на тёмном фоне, чтобы текст ниже фото оставался читаемым */}
       <header className="relative bg-navy text-cream">
-        <div ref={heroRef} className="relative h-[44vh] min-h-[320px] w-full overflow-hidden sm:h-[56vh]">
-          <motion.div style={{ y: heroY, scale: 1.12 }} className="h-full w-full">
-            <CoverImage src={item.hero} alt={item.title} accent={accent} label={cultureName(item.cultureSlug)} eager />
+        <div ref={heroRef} className="relative h-[32vh] min-h-[260px] w-full overflow-hidden sm:h-[40vh]">
+          <motion.div style={{ y: heroY, scale: 1.08 }} className="h-full w-full">
+            <CoverImage
+              src={item.hero}
+              alt={item.title}
+              accent={accent}
+              label={cultureName(item.cultureSlug)}
+              imgClassName="object-[center_45%]"
+              eager
+            />
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/55 to-navy/10" />
         </div>
-        <div className="wrap relative -mt-40 pb-12 sm:-mt-48">
+        <div className="wrap relative -mt-28 pb-8 sm:-mt-32">
           <div className="max-w-prose">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <FormatBadge format={item.format} soon={item.isPlaceholder} />
@@ -512,9 +612,9 @@ export default function Story() {
                 <span key={t} className="chip bg-cream/15 text-cream/90">{t}</span>
               ))}
             </div>
-            <h1 className="font-display text-3xl font-extrabold leading-tight sm:text-5xl">{item.title}</h1>
-            {item.subtitle && <p className="mt-3 text-xl text-cream/80">{item.subtitle}</p>}
-            <div data-tour="article-author" className="mt-6 text-sm text-cream/70">
+            <h1 className="font-display text-3xl font-extrabold leading-tight hyphens-auto break-words sm:text-4xl">{item.title}</h1>
+            {item.subtitle && <p className="mt-2 text-lg text-cream/80 hyphens-auto break-words">{item.subtitle}</p>}
+            <div data-tour="article-author" className="mt-4 text-sm text-cream/70">
               <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
                 <AuthorLinks item={item} size={28} dark />
                 <div className="flex items-center gap-2.5">
@@ -532,20 +632,28 @@ export default function Story() {
         </div>
       </header>
 
-      {/* Тело */}
-      <div className="wrap mt-10">
-        {html ? (
-          <div className="article-body mx-auto max-w-prose" dangerouslySetInnerHTML={{ __html: html }} />
-        ) : (
-          <div className="mx-auto max-w-prose space-y-3.5" aria-hidden>
-            {[100, 95, 98, 88, 0, 97, 92, 85].map((w, i) =>
-              w === 0
-                ? <div key={i} className="h-4" />
-                : <div key={i} className="skeleton h-4 rounded-full" style={{ width: `${w}%` }} />,
-            )}
-          </div>
-        )}
+      {/* Тело статьи + боковые колонки (оглавление слева, действия справа).
+          Всё в одном relative-блоке: sticky-элементы ограничены текстом и не
+          наплывают ни на шапку сверху, ни на похожие/футер снизу. */}
+      <div className="wrap mt-8">
+        <div className="relative">
+          <TableOfContents html={html} />
+          {html ? (
+            <div className="article-body mx-auto max-w-prose" dangerouslySetInnerHTML={{ __html: html }} />
+          ) : (
+            <div className="mx-auto max-w-prose space-y-3.5" aria-hidden>
+              {[100, 95, 98, 88, 0, 97, 92, 85].map((w, i) =>
+                w === 0
+                  ? <div key={i} className="h-4" />
+                  : <div key={i} className="skeleton h-4 rounded-full" style={{ width: `${w}%` }} />,
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* маркер конца статьи: ниже него мобильный кластер действий прячется */}
+      <div data-article-end aria-hidden />
 
       <ArticleFeedback slug={item.slug} cultureSlug={item.cultureSlug} />
 

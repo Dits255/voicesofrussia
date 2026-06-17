@@ -68,7 +68,7 @@ export default function Culture() {
             <MapPin size={15} aria-hidden /> {culture.region}
           </div>
           <div className="mb-3 h-1.5 w-14 rounded-full" style={{ backgroundColor: culture.accent }} aria-hidden />
-          <h1 className="font-display text-[1.6rem] font-extrabold leading-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl">{culture.name}</h1>
+          <h1 className="font-display text-[1.6rem] font-extrabold leading-tight hyphens-auto break-words sm:text-4xl lg:text-5xl">{culture.name}</h1>
           <p className="mt-1 text-lg text-cream/70">самоназвание — {culture.selfName}</p>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-cream/85">{culture.description}</p>
           <div

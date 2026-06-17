@@ -105,12 +105,17 @@ function CommentItem({ slug, c, color, onDelete }) {
   )
 }
 
+const INITIAL_COMMENTS = 3
+
 export default function Comments({ slug }) {
   const { user, openLogin } = useAuth()
   const [mine, setMine] = useLocal(`golosa-comments:${slug}`, [])
   const [text, setText] = useState('')
+  const [expanded, setExpanded] = useState(false)
   const seeded = seededFor(slug)
   const all = [...mine, ...seeded]
+  const visible = expanded ? all : all.slice(0, INITIAL_COMMENTS)
+  const restCount = all.length - visible.length
 
   const submit = (e) => {
     e.preventDefault()
@@ -165,7 +170,7 @@ export default function Comments({ slug }) {
 
         <div className="mt-7 space-y-6">
           <AnimatePresence initial={false}>
-            {all.map((c, i) => (
+            {visible.map((c, i) => (
               <motion.div
                 key={c.id}
                 layout="position"
@@ -184,6 +189,15 @@ export default function Comments({ slug }) {
             ))}
           </AnimatePresence>
         </div>
+
+        {restCount > 0 && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="mt-6 w-full rounded-full border border-navy/15 py-2.5 text-sm font-semibold text-navy transition-colors hover:border-teal hover:text-teal"
+          >
+            Показать ещё {restCount}
+          </button>
+        )}
       </div>
     </section>
   )
